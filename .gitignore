@@ -1,4 +1,5 @@
 tmux/plugins
+coc/extensions
 configstore
 neofetch
 raycast
