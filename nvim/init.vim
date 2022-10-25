@@ -7,6 +7,10 @@ nmap <C-P> :GFiles<CR>
 nmap <C-K> :bnext<CR>
 nmap <C-J> :bprev<CR>
 nmap <C-Q> :bd<CR>
+nnoremap <esc> :noh<return><esc> 
+nnoremap <leader>d "_d
+xnoremap <leader>d "_d
+xnoremap <leader>p "_dP
 
 call plug#begin()
 Plug 'dracula/vim', { 'as': 'dracula' }
@@ -47,6 +51,8 @@ Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}
 Plug 'tmux-plugins/vim-tmux-focus-events'
 Plug 'dag/vim-fish'
 Plug 'kyazdani42/nvim-web-devicons'
+Plug 'haya14busa/is.vim'
+Plug 'nelstrom/vim-visual-star-search'
 call plug#end()
 
 set number
@@ -161,7 +167,17 @@ nnoremap N Nzzzv
 noremap <C-d> <C-d>zz
 noremap <C-u> <C-u>zz
 
-" START coc autocompletion settings
+" Press * to search for the term under the cursor for a visual selection and
+" then press a key below to replace all instances of it in the current file
+nnoremap <leader>r :%s///g<Left><Left>
+nnoremap <leader>rc :%s///gc<Left><Left><Left>
+
+" Same like above, but for visally selected characters. Visually select, shift *
+" then press a key below to replace all instances of it in the current file
+xnoremap <leader>r :s///g<Left><Left>
+xnoremap <leader>rc :s///gc<Left><Left><Left>
+
+" =========================START coc autocompletion settings
 " Some servers have issues with backup files, see #649.
 set nobackup
 set nowritebackup
@@ -310,4 +326,4 @@ nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
 nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
 " Resume latest coc list.
 nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
-" END coc autocompletion settings
+" =========================END coc autocompletion settings
