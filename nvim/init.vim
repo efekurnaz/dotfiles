@@ -8,7 +8,7 @@ nmap <C-K> :bnext<CR>
 nmap <C-J> :bprev<CR>
 nmap <C-Q> :bd<CR>
 nnoremap <esc> :noh<return><esc> 
-nnoremap <leader>d "_d
+nnoremap c "_c
 xnoremap <leader>d "_d
 xnoremap <leader>p "_dP
 
@@ -74,7 +74,7 @@ set ignorecase
 set smartcase
 set completeopt=menu,menuone
 set nocursorcolumn
-set nocursorline
+set cursorline
 set updatetime=300
 set pumheight=10
 set conceallevel=2
