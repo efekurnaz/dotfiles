@@ -38,10 +38,10 @@ Plug 'neovim/nvim-lspconfig'
 Plug 'kabouzeid/nvim-lspinstall'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'mxw/vim-jsx'
-Plug 'pangloss/vim-javascript'
+Plug 'yuezk/vim-js'
+Plug 'leafgarland/typescript-vim'
+Plug 'maxmellon/vim-jsx-pretty'
 Plug 'leafOfTree/vim-matchtag'
-"	Plug 'yaegassy/coc-tailwindcss3', {'do': 'yarn install
-"	--frozen-lockfile'}"
 "	Plug 'hrsh7th/nvim-cmp'"
 "	Plug 'tami5/lspsaga.nvim'"
 "	Plug 'folke/trouble.nvim'"
@@ -53,6 +53,9 @@ Plug 'dag/vim-fish'
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'haya14busa/is.vim'
 Plug 'nelstrom/vim-visual-star-search'
+Plug 'alvan/vim-closetag'
+Plug 'Yggdroot/indentLine'
+Plug 'jiangmiao/auto-pairs'
 call plug#end()
 
 set number
@@ -61,7 +64,7 @@ set autoindent
 set tabstop=2
 set shiftwidth=2
 set smarttab
-set softtabstop=4
+set softtabstop=2
 set mouse=a
 set laststatus=2
 set encoding=utf-8
@@ -83,6 +86,10 @@ set lazyredraw
 set clipboard^=unnamed
 set clipboard^=unnamedplus
 set t_Co=256
+set ww+=<,>,h,l " wrap cursor to next/prev line when going left and right
+
+" alvan/vim-closetag file extensions to enable
+let g:closetag_filenames = '*.html,*.xhtml,*.phtml, *.liquid'
 
 syntax enable
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
@@ -91,8 +98,18 @@ set termguicolors
 
 colorscheme dracula
 
+let g:vim_json_conceal=0
+let g:markdown_syntax_conceal=0
+let g:indentLine_char_list = ['|', '¦', '┆', '┊']
+set list lcs=tab:\|\ 
+
 filetype off
 filetype plugin indent on
+
+" auto-pairs
+let g:AutoPairsFlyMode = 0
+let g:AutoPairsShortcutBackInsert = '<M-b>'
+au FileType liquid let b:AutoPairs = AutoPairsDefine({'{%' : '%}', '{{' : '}}'})
 
 " air-line
 let g:airline_powerline_fonts = 1
@@ -176,6 +193,8 @@ nnoremap <leader>rc :%s///gc<Left><Left><Left>
 " then press a key below to replace all instances of it in the current file
 xnoremap <leader>r :s///g<Left><Left>
 xnoremap <leader>rc :s///gc<Left><Left><Left>
+
+autocmd FileType html,liquid,javascript,css autocmd BufWritePre <buffer> %s/\s\+$//e
 
 " =========================START coc autocompletion settings
 " Some servers have issues with backup files, see #649.
@@ -327,3 +346,4 @@ nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
 " Resume latest coc list.
 nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 " =========================END coc autocompletion settings
+
