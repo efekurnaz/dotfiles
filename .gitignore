@@ -11,3 +11,5 @@ iterm2
 gh/hosts.yml
 planetscale/access-token
 sanity/config.json
+node_modules
+.DS_Store
