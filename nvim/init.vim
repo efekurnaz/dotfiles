@@ -90,9 +90,12 @@ set shortmess=A
 " alvan/vim-closetag file extensions to enable
 let g:closetag_filenames = '*.html,*.xhtml,*.phtml, *.liquid'
 
-autocmd BufNewFile,BufRead *.js.liquid set filetype=js
+autocmd BufNewFile,BufRead *.js.liquid set filetype=javascript
 autocmd BufNewFile,BufRead *.css.liquid set filetype=css
 autocmd BufNewFile,BufRead *.scss.liquid set filetype=scss
+autocmd BufNewFile,BufRead *.js.liquid set syntax=javascript
+autocmd BufNewFile,BufRead *.css.liquid set syntax=css
+autocmd BufNewFile,BufRead *.scss.liquid set syntax=scss
 
 syntax enable
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
@@ -106,7 +109,7 @@ let g:markdown_syntax_conceal=0
 let g:indentLine_char_list = ['|', '¦', '┆', '┊']
 set list lcs=tab:\|\ 
 
-filetype off
+"filetype off
 filetype plugin indent on
 
 " auto-pairs
@@ -210,7 +213,7 @@ nnoremap <leader>rc :%s///gc<Left><Left><Left>
 xnoremap <leader>r :s///g<Left><Left>
 xnoremap <leader>rc :s///gc<Left><Left><Left>
 
-autocmd FileType html,liquid,javascript,css autocmd BufWritePre <buffer> %s/\s\+$//e
+"autocmd FileType html,liquid,javascript,css autocmd BufWritePre <buffer> %s/\s\+$//e
 
 source ~/.config/nvim/coc_config.vim
 
