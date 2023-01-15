@@ -39,7 +39,8 @@ set linebreak " avoid wrapping a line in the middle of a word
 set scrolloff=1 " the number of screen lines to keep above and below the cursor
 set sidescrolloff=5 " the number of screen columns to keep to the left and right of the cursor
 syntax enable " enable syntax highlighting
-set wrap " enable line wrapping
+set wrap " enable line set wrap
+set showbreak=>\ \ \  " note trailing space at end of next line
 
 " USER INTERFACE OPTIONS
 set laststatus=2 " always display the status bar
