@@ -17,6 +17,10 @@ set fish_greeting ""
 
 if status is-interactive
     # Commands to run in interactive sessions can go here
+
+		# start tmux if not
+		and not set -q TMUX
+			exec tmux
 end
 
 fish_default_key_bindings -M insert
