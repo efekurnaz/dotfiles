@@ -63,8 +63,10 @@ set shortmess+=c " don't give ins-completion-menu messages
 set shortmess+=A " don't let Vim's 'Found a swap file' message block input
 set splitright " split new window to the right of the current window
 set termguicolors " enable 24-bit RGB color in the terminal ui
+set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+ " make some characters more readable
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum" " fix termgui colors
 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum" " fix termgui colors
+set t_Co=16 " allow color schemes to do bright colors without forcing bold
 
 " CODE FOLDING OPTIONS
 set foldmethod=indent " fold based on indention levels
@@ -72,6 +74,7 @@ set foldnestmax=3 " only fold up to three nested levels
 set nofoldenable " disable folding by default
 
 " MISC OPTIONS
+set autoread " autoread/load the files changed externally
 set backspace=indent,eol,start " allow backspacing over indentation, line breaks and insertion start
 set hidden " hide files in the background instead of closing them
 set noswapfile " disable swap files
