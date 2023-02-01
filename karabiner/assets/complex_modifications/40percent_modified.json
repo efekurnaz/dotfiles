@@ -1,8 +1,8 @@
 {
-  "title": "Right command qwerty to numbers",
+  "title": "Right command qwerty to upper row symbols",
   "rules": [
     {
-      "description": "Right command qwerty to numbers",
+      "description": "Right command qwerty to upper row symbols",
       "manipulators": [
         {
           "from": {
@@ -15,7 +15,8 @@
           },
           "to": [
             {
-              "key_code": "1"
+              "key_code": "1",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"
@@ -34,7 +35,8 @@
           },
           "to": [
             {
-              "key_code": "2"
+              "key_code": "2",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"
@@ -53,7 +55,8 @@
           },
           "to": [
             {
-              "key_code": "3"
+              "key_code": "3",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"
@@ -72,7 +75,8 @@
           },
           "to": [
             {
-              "key_code": "4"
+              "key_code": "4",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"
@@ -91,7 +95,8 @@
           },
           "to": [
             {
-              "key_code": "5"
+              "key_code": "5",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"
@@ -110,7 +115,8 @@
           },
           "to": [
             {
-              "key_code": "6"
+              "key_code": "6",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"
@@ -129,7 +135,8 @@
           },
           "to": [
             {
-              "key_code": "7"
+              "key_code": "7",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"
@@ -148,7 +155,8 @@
           },
           "to": [
             {
-              "key_code": "8"
+              "key_code": "8",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"
@@ -167,7 +175,8 @@
           },
           "to": [
             {
-              "key_code": "9"
+              "key_code": "9",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"
@@ -186,7 +195,8 @@
           },
           "to": [
             {
-              "key_code": "0"
+              "key_code": "0",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"
@@ -205,7 +215,8 @@
           },
           "to": [
             {
-              "key_code": "hyphen"
+              "key_code": "hyphen",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"
@@ -224,7 +235,8 @@
           },
           "to": [
             {
-              "key_code": "equal_sign"
+              "key_code": "equal_sign",
+              "modifiers": ["right_shift"]
             }
           ],
           "type": "basic"

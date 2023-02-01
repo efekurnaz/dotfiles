@@ -39,6 +39,7 @@ Plug 'alvan/vim-closetag'
 Plug 'Yggdroot/indentLine'
 Plug 'jiangmiao/auto-pairs'
 Plug 'fladson/vim-kitty'
+Plug 'godlygeek/tabular'
 call plug#end()
 
 colorscheme dracula
@@ -63,37 +64,37 @@ if !exists('g:airline_symbols')
 endif
 
 " unicode symbols
-let g:airline_left_sep = '»'
-let g:airline_left_sep = '▶'
-let g:airline_right_sep = '«'
-let g:airline_right_sep = '◀'
-let g:airline_symbols.linenr = '␊'
-let g:airline_symbols.linenr = '␤'
-let g:airline_symbols.linenr = '¶'
-let g:airline_symbols.branch = '⎇'
-let g:airline_symbols.paste = 'ρ'
-let g:airline_symbols.paste = 'Þ'
-let g:airline_symbols.paste = '∥'
-let g:airline_symbols.whitespace = 'Ξ'
+let g:airline_left_sep                     = '»'
+let g:airline_left_sep                     = '▶'
+let g:airline_right_sep                    = '«'
+let g:airline_right_sep                    = '◀'
+let g:airline_symbols.linenr               = '␊'
+let g:airline_symbols.linenr               = '␤'
+let g:airline_symbols.linenr               = '¶'
+let g:airline_symbols.branch               = '⎇'
+let g:airline_symbols.paste                = 'ρ'
+let g:airline_symbols.paste                = 'Þ'
+let g:airline_symbols.paste                = '∥'
+let g:airline_symbols.whitespace           = 'Ξ'
 
 " airline symbols
-let g:airline_left_sep = ''
-let g:airline_left_alt_sep = ''
-let g:airline_right_sep = ''
-let g:airline_right_alt_sep = ''
-let g:airline_symbols.branch = ''
-let g:airline_symbols.readonly = ''
-let g:airline_symbols.linenr = ''
+let g:airline_left_sep                     = ''
+let g:airline_left_alt_sep                 = ''
+let g:airline_right_sep                    = ''
+let g:airline_right_alt_sep                = ''
+let g:airline_symbols.branch               = ''
+let g:airline_symbols.readonly             = ''
+let g:airline_symbols.linenr               = ''
 
 " Enable the list of buffers
-let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#enabled   = 1
 
 " Show just the filename
-let g:airline#extensions#tabline#fnamemod = ':t'
+let g:airline#extensions#tabline#fnamemod  = ':t'
 let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
 
 " tmuxline
-let g:airline#extensions#tmuxline#enabled = 0
+let g:airline#extensions#tmuxline#enabled  = 0
 " let g:tmuxline_preset = {
 " 			\'a'    : '#S',
 " 			\'win'  : '#I  #W',
