@@ -27,7 +27,6 @@ Plug 'mxw/vim-jsx'
 Plug 'yuezk/vim-js'
 Plug 'leafgarland/typescript-vim'
 Plug 'maxmellon/vim-jsx-pretty'
-Plug 'leafOfTree/vim-matchtag'
 Plug 'plasticboy/vim-markdown'
 Plug 'roxma/vim-tmux-clipboard'
 Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}
@@ -40,10 +39,18 @@ Plug 'Yggdroot/indentLine'
 Plug 'jiangmiao/auto-pairs'
 Plug 'fladson/vim-kitty'
 Plug 'godlygeek/tabular'
+Plug 'easymotion/vim-easymotion'
 call plug#end()
-
+      
 colorscheme dracula
 
+" === EASYMOTION/VIM-EASYMOTION
+let g:EasyMotion_smartcase = 1
+map <leader><leader>. <Plug>(easymotion-repeat)
+map f <Plug>(easymotion-overwin-f2)
+map <leader><leader>j <Plug>(easymotion-overwin-line)
+map <leader><leader>k <Plug>(easymotion-overwin-line)
+ 
 " === ALVAN/VIM-CLOSETAG
 let g:closetag_filenames = '*.html,*.xhtml,*.phtml, *.liquid'
 

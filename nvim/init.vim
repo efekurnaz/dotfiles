@@ -15,13 +15,15 @@ if &shell =~# 'fish$'
 endif
 
 " INDENTION OPTIONS
-set autoindent     " new lines inherit the indentation of previous lines
-set tabstop=2      " indent using two spaces
-set shiftwidth=2   " when shifting, indent using two spaces
-set smarttab       " insert 'tabstop' number of spaces when the 'tab' key is pressed
-set expandtab      " converts tabs to spaces
-filetype indent on " enable indentation rules that are file-type specific
-set shiftround     " when shifting lines, round the indentation to the nearest multiple of 'shiftwidth'
+set autoindent                    " new lines inherit the indentation of previous lines
+set tabstop=2                     " indent using two spaces
+set shiftwidth=2                  " when shifting, indent using two spaces
+set smarttab                      " insert 'tabstop' number of spaces when the 'tab' key is pressed
+set expandtab                     " converts tabs to spaces
+filetype indent on                " enable indentation rules that are file-type specific
+set shiftround                    " when shifting lines, round the indentation to the nearest multiple of 'shiftwidth'
+let g:html_indent_script1 = 'inc' " indent content inside script tags in html
+let g:html_indent_style1 = 'inc'  " indent content inside style tags in html
 
 " SEARCH OPTIONS
 set incsearch  " incremental search that shows partial matches
@@ -82,6 +84,7 @@ set noshowmatch                " do not jump to the matching bracket
 set clipboard^=unnamed         " use clipboard register * for yank, delete, change and put
 set clipboard^=unnamedplus     " use clipboard register + for all expect yank
 set ww+=<,>,h,l                " wrap cursor to next/prev line when going left and right
+
 
 source ~/.config/nvim/plugins.vim   " this script contains plugin specific settings
 source ~/.config/nvim/mappings.vim  " this script contains mappings

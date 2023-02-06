@@ -1,15 +1,15 @@
 {
-  "title": "Right command qwerty to upper row symbols",
+  "title": "Right option qwerty to upper row symbols",
   "rules": [
     {
-      "description": "Right command qwerty to upper row symbols",
+      "description": "Right option qwerty to upper row symbols",
       "manipulators": [
         {
           "from": {
             "key_code": "q",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ]
             }
           },
@@ -26,7 +26,7 @@
             "key_code": "w",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ],
               "optional": [
                 "any"
@@ -46,7 +46,7 @@
             "key_code": "e",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ],
               "optional": [
                 "any"
@@ -66,7 +66,7 @@
             "key_code": "r",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ],
               "optional": [
                 "any"
@@ -86,7 +86,7 @@
             "key_code": "t",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ],
               "optional": [
                 "any"
@@ -106,7 +106,7 @@
             "key_code": "y",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ],
               "optional": [
                 "any"
@@ -126,7 +126,7 @@
             "key_code": "u",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ],
               "optional": [
                 "any"
@@ -146,7 +146,7 @@
             "key_code": "i",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ],
               "optional": [
                 "any"
@@ -166,7 +166,7 @@
             "key_code": "o",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ],
               "optional": [
                 "any"
@@ -186,7 +186,7 @@
             "key_code": "p",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ],
               "optional": [
                 "any"
@@ -206,7 +206,7 @@
             "key_code": "open_bracket",
               "modifiers": {
                 "mandatory": [
-                  "right_command"
+                  "right_option"
                 ],
                 "optional": [
                   "any"
@@ -226,7 +226,7 @@
             "key_code": "close_bracket",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ],
               "optional": [
                 "any"
