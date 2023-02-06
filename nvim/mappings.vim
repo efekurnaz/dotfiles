@@ -6,7 +6,12 @@
 " press spacebar to type : in command mode
 nnoremap <space> :
 
+" Find filename in git files
 nmap <C-P> :GFiles<CR>
+
+" Find text in git files
+nmap <C-E> :Rg<CR>
+
 " move among buffers with CTRL
 nmap <C-K> :bnext<CR>
 nmap <C-J> :bprev<CR>
