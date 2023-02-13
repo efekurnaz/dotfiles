@@ -47,7 +47,7 @@ colorscheme dracula
 " === EASYMOTION/VIM-EASYMOTION
 let g:EasyMotion_smartcase = 1
 map <leader><leader>. <Plug>(easymotion-repeat)
-map f <Plug>(easymotion-overwin-f2)
+map <leader>f <Plug>(easymotion-overwin-f2)
 map <leader><leader>j <Plug>(easymotion-overwin-line)
 map <leader><leader>k <Plug>(easymotion-overwin-line)
  
