@@ -43,6 +43,7 @@ set sidescrolloff=5   " the number of screen columns to keep to the left and rig
 syntax enable         " enable syntax highlighting
 set wrap              " enable line set wrap
 set showbreak=>\ \ \  " note trailing space at end of next line
+set guicursor=i:blinkwait100-blinkon100-blinkoff150 " blink cursor on insert mode
 
 " USER INTERFACE OPTIONS
 set laststatus=2             " always display the status bar
@@ -89,3 +90,5 @@ set ww+=<,>,h,l                " wrap cursor to next/prev line when going left a
 source ~/.config/nvim/plugins.vim   " this script contains plugin specific settings
 source ~/.config/nvim/mappings.vim  " this script contains mappings
 source ~/.config/nvim/functions.vim " this script contains helper functions
+
+hi Search cterm=NONE ctermbg=blue 
