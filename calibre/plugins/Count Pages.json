@@ -1,0 +1,39 @@
+{
+  "Options": {
+    "askForConfirmation": true,
+    "buttonDefault": "Estimate",
+    "checkAllSources": true,
+    "downloadSources": [
+      [
+        "goodreads",
+        true,
+        true
+      ],
+      [
+        "lubimyczytac.pl",
+        false,
+        false
+      ],
+      [
+        "skoob",
+        false,
+        false
+      ],
+      [
+        "databazeknih.cz",
+        false,
+        false
+      ],
+      [
+        "cbdb.cz",
+        false,
+        false
+      ]
+    ],
+    "overwriteExisting": true,
+    "showTryAllSources": true,
+    "updateIfUnchanged": false,
+    "useIcuWordcount": true,
+    "usePreferredOutput": false
+  }
+}

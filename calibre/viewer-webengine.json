@@ -1,0 +1,50 @@
+{
+  "main_window_geometry": {
+    "__class__": "bytearray",
+    "__value__": "AdnQywADAAAAAASgAAAB4QAACIkAAAZkAAAEoAAAAf0AAAiJAAAGZAAAAAAAAAAAC8AAAASgAAAB/QAACIkAAAZk"
+  },
+  "main_window_state": {
+    "__class__": "bytearray",
+    "__value__": "AAAA/wAAAAH9AAAAAgAAAAAAAAAAAAAAAPwCAAAAAvsAAAAQAHQAbwBjAC0AZABvAGMAawAAAAAA/////wAAAIcA////+wAAABYAcwBlAGEAcgBjAGgALQBkAG8AYwBrAAAAAAD/////AAAAlQD///8AAAABAAAAAAAAAAD8AgAAAAT7AAAAFgBsAG8AbwBrAHUAcAAtAGQAbwBjAGsAAAAAAP////8AAAB9AP////sAAAAcAGIAbwBvAGsAbQBhAHIAawBzAC0AZABvAGMAawAAAAAA/////wAAAOcA////+wAAABwAaQBuAHMAcABlAGMAdABvAHIALQBkAG8AYwBrAAAAAAD/////AAAAEwD////7AAAAHgBoAGkAZwBoAGwAaQBnAGgAdABzAC0AZABvAGMAawAAAAAA/////wAAAMkA////AAAD6gAABGgAAAAEAAAABAAAAAgAAAAI/AAAAAEAAAAAAAAAAQAAAB4AYQBjAHQAaQBvAG4AcwBfAHQAbwBvAGwAYgBhAHICAAAAAP////8AAAAAAAAAAA=="
+  },
+  "old_prefs_migrated": true,
+  "session_data": {
+    "controls_help_shown_count": 2,
+    "standalone_font_settings": {},
+    "standalone_misc_settings": {
+      "remember_last_read": true,
+      "remember_window_geometry": false,
+      "save_annotations_in_ebook": true,
+      "singleinstance": false
+    },
+    "standalone_recently_opened": [
+      {
+        "authors": [
+          "Mike Monteiro"
+        ],
+        "key": "/Users/efe/Calibre Library/Mike Monteiro/You're My Favorite Client (44)/You're My Favorite Client - Mike Monteiro.azw",
+        "pathtoebook": "/Users/efe/Calibre Library/Mike Monteiro/You're My Favorite Client (44)/You're My Favorite Client - Mike Monteiro.azw",
+        "timestamp": "2022-10-25T22:13:13.774Z",
+        "title": "You're My Favorite Client"
+      },
+      {
+        "authors": [
+          "James Robinson Daron Acemoğlu"
+        ],
+        "key": "/var/folders/g4/m9gldyfd1fgblkj0_6bg8t2w0000gn/C/calibre_6.7.1_tmp_wk0sw880/1wsinbmi_view_device_book.azw",
+        "pathtoebook": "/var/folders/g4/m9gldyfd1fgblkj0_6bg8t2w0000gn/C/calibre_6.7.1_tmp_wk0sw880/1wsinbmi_view_device_book.azw",
+        "timestamp": "2022-10-25T21:58:08.005Z",
+        "title": "Ulusların Düşüşü"
+      },
+      {
+        "authors": [
+          "John Maeda"
+        ],
+        "key": "/Users/efe/Calibre Library/John Maeda/Laws Simplicity (2)/Laws Simplicity - John Maeda.epub",
+        "pathtoebook": "/Users/efe/Calibre Library/John Maeda/Laws Simplicity (2)/Laws Simplicity - John Maeda.epub",
+        "timestamp": "2022-07-28T20:04:24.770Z",
+        "title": "Laws Simplicity"
+      }
+    ]
+  }
+}

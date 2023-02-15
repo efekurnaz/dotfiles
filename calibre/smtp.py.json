@@ -1,0 +1,18 @@
+{
+  "accounts": {
+    "efekurnaz@kindle.com": [
+      "EPUB, TPZ",
+      true,
+      true
+    ]
+  },
+  "aliases": {},
+  "encryption": "SSL",
+  "from_": "efekurnaz@gmail.com",
+  "relay_host": "imap.gmail.com",
+  "relay_password": "4a6944756642484254467b4850336e517b686a726b4d625a",
+  "relay_port": 465,
+  "relay_username": "efekurnaz@gmail.com",
+  "subjects": {},
+  "tags": {}
+}

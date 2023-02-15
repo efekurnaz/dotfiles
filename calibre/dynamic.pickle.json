@@ -1,0 +1,32 @@
+{
+  "catalogs_to_be_synced": {
+    "__class__": "set",
+    "__value__": []
+  },
+  "notified-version-updates": {
+    "__class__": "set",
+    "__value__": [
+      "6.4",
+      "6.12",
+      "6.7",
+      "6.2"
+    ]
+  },
+  "save to disk dialog": "/Users/efe/Calibre Library/John Maeda/The Laws of Simplicity (2)",
+  "sort_history": [
+    [
+      "#words",
+      false
+    ],
+    [
+      "timestamp",
+      false
+    ],
+    [
+      "timestamp",
+      false
+    ]
+  ],
+  "welcome_wizard_device": "kindle_pw",
+  "welcome_wizard_was_run": true
+}
