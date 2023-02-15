@@ -1,0 +1,16 @@
+{
+  "disabled_plugins": {
+    "__class__": "set",
+    "__value__": []
+  },
+  "enabled_plugins": {
+    "__class__": "set",
+    "__value__": []
+  },
+  "filetype_mapping": {},
+  "plugin_customization": {},
+  "plugins": {
+    "Count Pages": "/Users/efe/Library/Preferences/calibre/plugins/Count Pages.zip",
+    "Kindle hi-res covers": "/Users/efe/Library/Preferences/calibre/plugins/Kindle hi-res covers.zip"
+  }
+}
