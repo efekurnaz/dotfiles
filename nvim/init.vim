@@ -43,7 +43,9 @@ set sidescrolloff=5   " the number of screen columns to keep to the left and rig
 syntax enable         " enable syntax highlighting
 set wrap              " enable line set wrap
 set showbreak=>\ \ \  " note trailing space at end of next line
-set guicursor=i-c:blinkwait100-blinkon100-blinkoff150 " blink cursor on insert and command mode
+set guicursor=n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50
+  \,a:blinkwait100-blinkoff100-blinkon100-Cursor/lCursor
+  \,sm:block-blinkwait175-blinkoff150-blinkon175 " blink cursor on insert and command mode
 
 " USER INTERFACE OPTIONS
 set laststatus=2             " always display the status bar
