@@ -94,3 +94,5 @@ source ~/.config/nvim/mappings.vim  " this script contains mappings
 source ~/.config/nvim/functions.vim " this script contains helper functions
 
 hi Search cterm=NONE ctermbg=blue 
+
+autocmd bufwritepost ~/.config/kitty/kitty.conf :silent !kill -SIGUSR1 $(pgrep kitty)
