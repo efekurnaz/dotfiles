@@ -2,7 +2,6 @@ cask_args appdir: "/Applications"
 tap "heroku/brew"
 tap "homebrew/bundle"
 tap "homebrew/cask"
-tap "homebrew/cask-fonts"
 tap "homebrew/cask-versions"
 tap "homebrew/core"
 tap "homebrew/services"
@@ -92,4 +91,21 @@ cask "uninstallpkg"
 cask "vnc-viewer"
 cask "zoom"
 
+tap "homebrew/cask-fonts"
 cask "font-fira-code"
+
+mas 'Numbers', id: 409203825
+mas 'Pages', id: 409201541
+mas 'Keynote', id: 409183694
+mas 'GarageBand', id: 682658836
+mas 'iMovie', id: 408981434
+mas 'Final Cut Pro', id: 424389933
+mas 'Motion', id: 434290957
+mas 'Affinity Photo', id: 824183456
+mas 'Affinity Designer', id: 824171161
+mas 'PopClip', id: 445189367
+mas 'DaisyDisk', id: 411643860
+mas 'HazeOver', id: 430798174
+mas 'Data Jar', id: 1453273600
+mas 'Poolsuite FM', id: 1514817810
+mas 'Grammarly for Safari', id: 1462114288

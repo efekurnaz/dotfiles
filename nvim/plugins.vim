@@ -22,7 +22,7 @@ Plug 'junegunn/goyo.vim'
 Plug 'mattn/emmet-vim'
 Plug 'neovim/nvim-lspconfig'
 Plug 'kabouzeid/nvim-lspinstall'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+"Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'mxw/vim-jsx'
 Plug 'yuezk/vim-js'
 Plug 'leafgarland/typescript-vim'
@@ -135,4 +135,4 @@ EOF
 
 "autocmd FileType html,liquid,javascript,css autocmd BufWritePre <buffer> %s/\s\+$//e
 
-source ~/.config/nvim/coc_config.vim
+"source ~/.config/nvim/coc_config.vim
