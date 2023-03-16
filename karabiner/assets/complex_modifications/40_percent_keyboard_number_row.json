@@ -1,9 +1,74 @@
 {
-  "title": "Right option qwerty to numbers",
+  "title": "Right option qwerty and m,j,k,l to numbers",
   "rules": [
     {
-      "description": "Right option qwerty to numbers",
+      "description": "Right option qwerty and m,j,k,l to numbers",
       "manipulators": [
+        {
+          "from": {
+            "key_code": "m",
+            "modifiers": {
+              "mandatory": [
+                "right_option"
+              ]
+            }
+
+          },
+          "to": [
+            {
+              "key_code": "0"
+            }
+          ],
+          "type": "basic"
+        },
+        {
+          "from": {
+            "key_code": "j",
+            "modifiers": {
+              "mandatory": [
+                "right_option"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "1"
+            }
+          ],
+          "type": "basic"
+        },
+        {
+          "from": {
+            "key_code": "k",
+            "modifiers": {
+              "mandatory": [
+                "right_option"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "2"
+            }
+          ],
+          "type": "basic"
+        },
+        {
+          "from": {
+            "key_code": "l",
+            "modifiers": {
+              "mandatory": [
+                "right_option"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "3"
+            }
+          ],
+          "type": "basic"
+        },
         {
           "from": {
             "key_code": "q",
