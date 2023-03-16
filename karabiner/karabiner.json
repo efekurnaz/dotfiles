@@ -421,7 +421,7 @@
                                 "conditions": [
                                     {
                                         "bundle_identifiers": [
-                                            "^kitty$"
+                                            "net.kovidgoyal.kitty"
                                         ],
                                         "type": "frontmost_application_if"
                                     }
@@ -445,7 +445,7 @@
                                 "conditions": [
                                     {
                                         "bundle_identifiers": [
-                                            "^kitty$"
+                                            "net.kovidgoyal.kitty"
                                         ],
                                         "type": "frontmost_application_if"
                                     }
@@ -469,7 +469,7 @@
                                 "conditions": [
                                     {
                                         "bundle_identifiers": [
-                                            "^kitty$"
+                                            "net.kovidgoyal.kitty"
                                         ],
                                         "type": "frontmost_application_if"
                                     }
@@ -493,7 +493,7 @@
                                 "conditions": [
                                     {
                                         "bundle_identifiers": [
-                                            "^kitty$"
+                                            "net.kovidgoyal.kitty"
                                         ],
                                         "type": "frontmost_application_if"
                                     }
@@ -517,7 +517,7 @@
                                 "conditions": [
                                     {
                                         "bundle_identifiers": [
-                                            "^kitty$"
+                                            "net.kovidgoyal.kitty"
                                         ],
                                         "type": "frontmost_application_if"
                                     }
@@ -541,7 +541,7 @@
                                 "conditions": [
                                     {
                                         "bundle_identifiers": [
-                                            "^kitty$"
+                                            "net.kovidgoyal.kitty"
                                         ],
                                         "type": "frontmost_application_if"
                                     }
