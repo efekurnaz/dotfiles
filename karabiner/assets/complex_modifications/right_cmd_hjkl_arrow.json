@@ -1,18 +1,10 @@
 {
-  "title": "Right cmd + hjkl to Arrow Keys Vim",
+  "title": "Right cmd + hjkl to arrow keys",
   "rules": [
     {
-      "description": "Right cmd + hjkl to arrow keys Vim",
+      "description": "Right cmd + hjkl to arrow keys",
       "manipulators": [
         {
-          "conditions": [
-              {
-                  "bundle_identifiers": [
-                      "net.kovidgoyal.kitty"
-                  ],
-                  "type": "frontmost_application_unless"
-              }
-          ],
            "from": {
             "key_code": "h",
             "modifiers": {
@@ -32,14 +24,6 @@
           "type": "basic"
         },
         {
-          "conditions": [
-              {
-                  "bundle_identifiers": [
-                      "net.kovidgoyal.kitty"
-                  ],
-                  "type": "frontmost_application_unless"
-              }
-          ],
           "from": {
             "key_code": "j",
             "modifiers": {
@@ -59,14 +43,6 @@
           "type": "basic"
         },
         {
-          "conditions": [
-              {
-                  "bundle_identifiers": [
-                      "net.kovidgoyal.kitty"
-                  ],
-                  "type": "frontmost_application_unless"
-              }
-          ],
           "from": {
             "key_code": "k",
             "modifiers": {
@@ -86,14 +62,6 @@
           "type": "basic"
         },
         {
-          "conditions": [
-              {
-                  "bundle_identifiers": [
-                      "net.kovidgoyal.kitty"
-                  ],
-                  "type": "frontmost_application_unless"
-              }
-          ],
           "from": {
             "key_code": "l",
             "modifiers": {

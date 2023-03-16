@@ -1,8 +1,8 @@
 {
-  "title": "Right command numpad",
+  "title": "Right option [m,j,k,l,u,i,o] to [0,1,2,3,4,5,6] in Kitty only",
   "rules": [
     {
-      "description": "Right command numpad",
+      "description": "Right option [m,j,k,l,u,i,o] to [0,1,2,3,4,5,6] in Kitty only",
       "manipulators": [
         {
           "conditions": [
@@ -17,7 +17,7 @@
             "key_code": "m",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ]
             }
 
@@ -42,7 +42,7 @@
             "key_code": "j",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ]
             }
           },
@@ -66,7 +66,7 @@
             "key_code": "k",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ]
             }
           },
@@ -90,7 +90,7 @@
             "key_code": "l",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ]
             }
           },
@@ -114,7 +114,7 @@
             "key_code": "u",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ]
             }
           },
@@ -138,7 +138,7 @@
             "key_code": "i",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ]
             }
           },
@@ -162,7 +162,7 @@
             "key_code": "o",
             "modifiers": {
               "mandatory": [
-                "right_command"
+                "right_option"
               ]
             }
           },
