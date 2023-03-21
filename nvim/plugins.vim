@@ -135,4 +135,4 @@ EOF
 
 "autocmd FileType html,liquid,javascript,css autocmd BufWritePre <buffer> %s/\s\+$//e
 
-"source ~/.config/nvim/coc_config.vim
+source ~/.config/nvim/coc_config.vim
