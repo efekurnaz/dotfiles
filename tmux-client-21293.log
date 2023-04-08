@@ -1,0 +1,69 @@
+1680286336.974951 client started (21293): version 3.3a, socket /private/tmp/tmux-501/default, protocol 8
+1680286336.975043 on Darwin 22.3.0 Darwin Kernel Version 22.3.0: Mon Jan 30 20:38:37 PST 2023; root:xnu-8792.81.3~2/RELEASE_ARM64_T6000
+1680286336.976741 using libevent 2.1.12-stable (select); utf8proc 2.8.0; ncurses 6.4
+1680286336.976803 flags are 0x10010000
+1680286336.976818 socket is /private/tmp/tmux-501/default
+1680286336.976842 trying connect
+1680286336.976930 add peer 0x140048000: 6 (0x0)
+1680286336.977094 sending message 100 to peer 0x140048000 (4 bytes)
+1680286336.977109 sending message 111 to peer 0x140048000 (8 bytes)
+1680286336.977119 sending message 101 to peer 0x140048000 (16 bytes)
+1680286336.977129 sending message 109 to peer 0x140048000 (4 bytes)
+1680286336.977138 sending message 102 to peer 0x140048000 (1 bytes)
+1680286336.977148 sending message 108 to peer 0x140048000 (19 bytes)
+1680286336.977159 sending message 104 to peer 0x140048000 (0 bytes)
+1680286336.977170 sending message 110 to peer 0x140048000 (0 bytes)
+1680286336.977179 sending message 107 to peer 0x140048000 (4 bytes)
+1680286336.977188 sending message 105 to peer 0x140048000 (92 bytes)
+1680286336.977203 sending message 105 to peer 0x140048000 (18 bytes)
+1680286336.977221 sending message 105 to peer 0x140048000 (21 bytes)
+1680286336.977230 sending message 105 to peer 0x140048000 (29 bytes)
+1680286336.977280 sending message 105 to peer 0x140048000 (41 bytes)
+1680286336.977316 sending message 105 to peer 0x140048000 (57 bytes)
+1680286336.977335 sending message 105 to peer 0x140048000 (27 bytes)
+1680286336.977354 sending message 105 to peer 0x140048000 (26 bytes)
+1680286336.977365 sending message 105 to peer 0x140048000 (15 bytes)
+1680286336.977378 sending message 105 to peer 0x140048000 (32 bytes)
+1680286336.977389 sending message 105 to peer 0x140048000 (9 bytes)
+1680286336.977399 sending message 105 to peer 0x140048000 (22 bytes)
+1680286336.977408 sending message 105 to peer 0x140048000 (66 bytes)
+1680286336.977421 sending message 105 to peer 0x140048000 (38 bytes)
+1680286336.977430 sending message 105 to peer 0x140048000 (42 bytes)
+1680286336.977439 sending message 105 to peer 0x140048000 (240 bytes)
+1680286336.977452 sending message 105 to peer 0x140048000 (54 bytes)
+1680286336.977461 sending message 105 to peer 0x140048000 (42 bytes)
+1680286336.977470 sending message 105 to peer 0x140048000 (23 bytes)
+1680286336.977479 sending message 105 to peer 0x140048000 (15 bytes)
+1680286336.977488 sending message 105 to peer 0x140048000 (12 bytes)
+1680286336.977496 sending message 105 to peer 0x140048000 (17 bytes)
+1680286336.977505 sending message 105 to peer 0x140048000 (47 bytes)
+1680286336.977513 sending message 105 to peer 0x140048000 (15 bytes)
+1680286336.977522 sending message 105 to peer 0x140048000 (14 bytes)
+1680286336.977531 sending message 105 to peer 0x140048000 (68 bytes)
+1680286336.977539 sending message 105 to peer 0x140048000 (8 bytes)
+1680286336.977548 sending message 105 to peer 0x140048000 (16 bytes)
+1680286336.977556 sending message 105 to peer 0x140048000 (67 bytes)
+1680286336.977565 sending message 105 to peer 0x140048000 (12 bytes)
+1680286336.977573 sending message 105 to peer 0x140048000 (74 bytes)
+1680286336.977582 sending message 105 to peer 0x140048000 (58 bytes)
+1680286336.977590 sending message 105 to peer 0x140048000 (64 bytes)
+1680286336.977599 sending message 105 to peer 0x140048000 (18 bytes)
+1680286336.977607 sending message 105 to peer 0x140048000 (72 bytes)
+1680286336.977616 sending message 105 to peer 0x140048000 (49 bytes)
+1680286336.977624 sending message 105 to peer 0x140048000 (24 bytes)
+1680286336.977633 sending message 105 to peer 0x140048000 (60 bytes)
+1680286336.977642 sending message 105 to peer 0x140048000 (20 bytes)
+1680286336.977650 sending message 105 to peer 0x140048000 (25 bytes)
+1680286336.977659 sending message 106 to peer 0x140048000 (0 bytes)
+1680286336.977739 sending message 200 to peer 0x140048000 (4 bytes)
+1680286336.977751 client loop enter
+1680286336.978283 peer 0x140048000 message 303
+1680286336.978299 open write file 2 -
+1680286336.978352 sending message 305 to peer 0x140048000 (8 bytes)
+1680286336.978375 write check file 2
+1680286336.978483 peer 0x140048000 message 304
+1680286336.978499 write 37 to file 2
+1680286336.978508 peer 0x140048000 message 203
+1680286336.978516 file 2 37 bytes left
+1680286336.978538 write check file 2
+1680286336.978546 client loop exit
