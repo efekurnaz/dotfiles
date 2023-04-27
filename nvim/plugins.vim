@@ -39,6 +39,7 @@ Plug 'jiangmiao/auto-pairs'
 Plug 'fladson/vim-kitty'
 Plug 'godlygeek/tabular'
 Plug 'easymotion/vim-easymotion'
+Plug 'github/copilot.vim'
 call plug#end()
       
 colorscheme dracula
