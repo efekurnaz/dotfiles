@@ -12,7 +12,8 @@ gh/hosts.yml
 planetscale/access-token
 sanity/config.json
 node_modules
-.DS_Storenvim/.netrwhist
+.DS_Store
+nvim/.netrwhist
 Code - OSS (headmelted)/
 Mousepad/
 Trolltech.conf
