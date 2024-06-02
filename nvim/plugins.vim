@@ -1,7 +1,7 @@
 call plug#begin()
 Plug 'dracula/vim', { 'as': 'dracula' }
-"Plug 'edkolev/tmuxline.vim'
 Plug 'tpope/vim-surround'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'powerline/powerline-fonts'
@@ -20,8 +20,8 @@ Plug 'scrooloose/nerdcommenter'
 Plug 'ThePrimeagen/vim-be-good'
 Plug 'junegunn/goyo.vim'
 Plug 'mattn/emmet-vim'
-Plug 'neovim/nvim-lspconfig' " auto completion
-Plug 'kabouzeid/nvim-lspinstall' " auto completion
+" Plug 'neovim/nvim-lspconfig' " auto completion
+" Plug 'williamboman/nvim-lspinstall' " auto completion
 Plug 'mxw/vim-jsx'
 Plug 'yuezk/vim-js'
 Plug 'leafgarland/typescript-vim'
@@ -39,6 +39,10 @@ Plug 'jiangmiao/auto-pairs'
 Plug 'fladson/vim-kitty'
 Plug 'godlygeek/tabular'
 Plug 'easymotion/vim-easymotion'
+Plug 'github/copilot.vim'
+" Plug 'leafOfTree/vim-matchtag'
+" Plug 'nvim-lua/plenary.nvim'
+Plug 'mustache/vim-mustache-handlebars'
 call plug#end()
       
 colorscheme dracula
@@ -49,7 +53,10 @@ map <leader><leader>. <Plug>(easymotion-repeat)
 map <leader>f <Plug>(easymotion-overwin-f2)
 map <leader><leader>j <Plug>(easymotion-overwin-line)
 map <leader><leader>k <Plug>(easymotion-overwin-line)
- 
+" === LEAFOFTREE/VIM-MATCHTAG
+let g:vim_matchtag_enable_by_default = 1
+let g:vim_matchtag_files = '*.html,*.xml,*.js,*.jsx,*.vue,*.svelte,*.jsp,*.liquid'
+
 " === ALVAN/VIM-CLOSETAG
 let g:closetag_filenames = '*.html,*.xhtml,*.phtml, *.liquid'
 
@@ -61,6 +68,8 @@ au FileType liquid let b:AutoPairs = AutoPairsDefine({'{%' : '%}', '{{' : '}}'})
 " === JUNEGUNN/FZF
 " exclude filenames from Rg 
 command! -bang -nargs=* Rg call fzf#vim#grep("rg --column --line-number --no-heading --color=always --smart-case ".shellescape(<q-args>), 1, {'options': '--delimiter : --nth 4..'}, <bang>0)
+command! -bang -nargs=? -complete=dir Files
+    \ call fzf#vim#files(<q-args>, fzf#vim#with_preview({'options': ['--layout=reverse', '--info=inline']}), <bang>0)
 
 " === VIM-AIRLINE/VIM-AIRLINE
 let g:airline_powerline_fonts = 1
@@ -128,9 +137,9 @@ let g:markdown_syntax_conceal=0
 let g:indentLine_char_list = ['|', '¦', '┆', '┊']
 set list lcs=tab:\|\ 
 
-lua << EOF
-require'lspconfig'.theme_check.setup{}
-require'lspconfig'.tailwindcss.setup{}
-EOF
+" lua << EOF
+" require'lspconfig'.theme_check.setup{}
+" require'lspconfig'.tailwindcss.setup{}
+" EOF
 
 "autocmd FileType html,liquid,javascript,css autocmd BufWritePre <buffer> %s/\s\+$//e

@@ -6,6 +6,7 @@ set -gx FZF_DEFAULT_COMMAND 'rg --files --hidden --ignore-file "~/.config/.ignor
 
 status --is-interactive; and source (jump shell fish | psub)
 
+set -gx BAT_THEME "Dracula"
 set fish_cursor_default block blink
 set fish_cursor_insert line blink
 set fish_cursor_replace_one underscore
@@ -28,3 +29,4 @@ fish_vi_key_bindings --no-erase insert
 
 # Just clear the commandline on control-c
 bind \cc 'commandline -r ""'
+direnv hook fish | source

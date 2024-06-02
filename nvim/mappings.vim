@@ -8,6 +8,7 @@ nnoremap <space> :
 
 " Find filename in git files
 nmap <C-P> :GFiles<CR>
+nmap <C-[> :GFiles?<CR>
 
 " Find text in git files
 nmap <C-E> :Rg<CR>
