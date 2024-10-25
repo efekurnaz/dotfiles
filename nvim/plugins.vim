@@ -54,7 +54,6 @@ map <leader><leader>. <Plug>(easymotion-repeat)
 map <leader>f <Plug>(easymotion-overwin-f2)
 map <leader><leader>j <Plug>(easymotion-overwin-line)
 map <leader><leader>k <Plug>(easymotion-overwin-line)
-
 " === LEAFOFTREE/VIM-MATCHTAG
 let g:vim_matchtag_enable_by_default = 1
 let g:vim_matchtag_files = '*.html,*.xml,*.js,*.jsx,*.vue,*.svelte,*.jsp,*.liquid'
@@ -109,6 +108,30 @@ let g:airline#extensions#tabline#enabled   = 1
 " Show just the filename
 let g:airline#extensions#tabline#fnamemod  = ':t'
 let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
+
+" tmuxline
+let g:airline#extensions#tmuxline#enabled  = 0
+" let g:tmuxline_preset = {
+" 			\'a'    : '#S',
+" 			\'win'  : '#I  #W',
+" 			\'cwin' : '#I  #W',
+" 			\'x'    : '%a',
+" 			\'y'    : '%Y-%m-%d %H:%M',
+" 			\'z'    : ' #h',
+" 			\'options' : {'status-justify' : 'left', 'status-position' : 'bottom'}}
+
+" let g:tmuxline_theme = { 'y' : ['#F8F8F3','#6271A4'] }
+" let g:tmuxline_theme = {
+"     \   'a'    : [ 236, 103 ],
+"     \   'b'    : [ 253, 239 ],
+"     \   'c'    : [ 244, 236 ],
+"     \   'x'    : [ 244, 236 ],
+"     \   'y'    : [ 253, 239 ],
+"     \   'z'    : [ 236, 103 ],
+"     \   'win'  : [ 103, 236 ],
+"     \   'cwin' : [ 236, 103 ],
+"     \   'bg'   : [ 244, 236 ],
+"     \ }
 
 let g:vim_json_conceal=0
 let g:markdown_syntax_conceal=0
