@@ -1,5 +1,6 @@
 call plug#begin()
 Plug 'dracula/vim', { 'as': 'dracula' }
+Plug 'NLKNguyen/papercolor-theme'
 Plug 'tpope/vim-surround'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'vim-airline/vim-airline'
@@ -45,7 +46,7 @@ Plug 'github/copilot.vim'
 Plug 'mustache/vim-mustache-handlebars'
 call plug#end()
       
-colorscheme dracula
+colorscheme Dracula
 
 " === EASYMOTION/VIM-EASYMOTION
 let g:EasyMotion_smartcase = 1
