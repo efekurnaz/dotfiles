@@ -30,3 +30,6 @@ fish_vi_key_bindings --no-erase insert
 # Just clear the commandline on control-c
 bind \cc 'commandline -r ""'
 direnv hook fish | source
+
+# Added by Windsurf
+fish_add_path /Users/efe/.codeium/windsurf/bin
