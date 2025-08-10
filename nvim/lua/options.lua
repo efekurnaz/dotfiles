@@ -181,7 +181,7 @@ opt.foldenable = false         -- Start with all folds open by default
 opt.autoread = true            -- Automatically reload files changed outside of vim
 opt.backspace = {'indent', 'eol', 'start'} -- Allow backspacing over everything in insert mode
 opt.hidden = true              -- Allow switching between buffers without saving
-opt.swapfile = false           -- Disable swap files (can cause issues with file watchers)
+opt.swapfile = true           -- Disable swap files (can cause issues with file watchers)
 opt.showmatch = false          -- Don't jump to matching brackets (can be disorienting)
 
 -- Clipboard integration - use system clipboard for all operations
