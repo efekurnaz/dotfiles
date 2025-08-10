@@ -42,6 +42,14 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
 
+
+  -- ==========================================================================
+  -- GIT INTEGRATION
+  -- ==========================================================================
+
+  -- Git commands within Vim (:Git status, :Git commit, etc.)
+  { "tpope/vim-fugitive", event = "VeryLazy" },
+
   -- ==========================================================================
   -- COLORSCHEME AND APPEARANCE
   -- ==========================================================================
@@ -71,7 +79,6 @@ require("lazy").setup({
     },
     init = function()
       -- Set variables before plugin loads
-      vim.g.airline_theme = 'dracula_pro'
       vim.g.airline_powerline_fonts = 1
       
       -- Enable buffer/tab line at the top
@@ -89,6 +96,9 @@ require("lazy").setup({
     config = function()
       -- Configure after plugin loads
       vim.defer_fn(function()
+        -- Set theme after plugin loads to avoid conflicts
+        vim.g.airline_theme = 'dracula_pro'
+        
         -- Initialize airline symbols table
         if not vim.g.airline_symbols then
           vim.g.airline_symbols = {}
@@ -172,7 +182,15 @@ require("lazy").setup({
         -- Languages to install parsers for
         ensure_installed = { 
           "javascript", "typescript", "html", "css", "lua", 
-          "vim", "json", "markdown", "bash"
+          "vim", "json", "markdown", "bash", "liquid"
+        },
+        -- Additional parser configurations
+        liquid = {
+          install_info = {
+            url = "https://github.com/Shopify/tree-sitter-liquid",
+            files = { "src/parser.c" },
+            branch = "main",
+          },
         },
         highlight = { 
           enable = true,    -- Enable treesitter highlighting
@@ -196,7 +214,7 @@ require("lazy").setup({
   -- JavaScript/CSS/HTML formatting
   { 
     "prettier/vim-prettier", 
-    ft = { "javascript", "typescript", "css", "html", "json" },
+    ft = { "javascript", "typescript", "css", "html", "json", "liquid" },
     keys = {
       { "<leader>p", ":Prettier<CR>", desc = "Format document with Prettier" }
     }
@@ -210,7 +228,16 @@ require("lazy").setup({
   { "ap/vim-css-color", ft = { "css", "scss", "sass", "html" } },
 
   -- Shopify Liquid templating language
-  { "efekurnaz/vim-liquid", ft = "liquid" },
+  { 
+    "tpope/vim-liquid", 
+    ft = "liquid",
+    config = function()
+      -- Ensure Liquid syntax highlighting works optimally
+      vim.g.liquid_highlight_all = 1
+      -- Set Liquid filetype for .liquid files
+      vim.g.liquid_default_subtype = 'html'
+    end
+  },
 
   -- JavaScript and JSX support
   { "mxw/vim-jsx", ft = { "javascript", "javascriptreact" } },
@@ -231,13 +258,6 @@ require("lazy").setup({
 
   -- Mustache/Handlebars templating
   { "mustache/vim-mustache-handlebars", ft = { "mustache", "handlebars" } },
-
-  -- ==========================================================================
-  -- GIT INTEGRATION
-  -- ==========================================================================
-
-  -- Git commands within Vim (:Git status, :Git commit, etc.)
-  { "tpope/vim-fugitive", event = "VeryLazy" },
 
   -- ==========================================================================
   -- TMUX INTEGRATION
