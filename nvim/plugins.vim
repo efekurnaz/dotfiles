@@ -46,7 +46,10 @@ Plug 'easymotion/vim-easymotion'
 Plug 'mustache/vim-mustache-handlebars'
 call plug#end()
       
-colorscheme Dracula
+colorscheme dracula_pro
+
+" === VIM-AIRLINE THEME
+let g:airline_theme = 'dracula_pro'
 
 " === EASYMOTION/VIM-EASYMOTION
 let g:EasyMotion_smartcase = 1
