@@ -170,14 +170,686 @@ require("lazy").setup({
   },
 
   -- ==========================================================================
+  -- LSP AND LANGUAGE SUPPORT
+  -- ==========================================================================
+  
+  -- Mason: Package manager for LSP servers, formatters, linters, and DAP servers
+  {
+    "williamboman/mason.nvim",
+    cmd = "Mason",
+    keys = { { "<leader>cm", "<cmd>Mason<cr>", desc = "Mason" } },
+    build = ":MasonUpdate",
+    opts = {
+      ensure_installed = {
+        "typescript-language-server",
+        "html-lsp",
+        "css-lsp",
+        "lua-language-server",
+        "json-lsp",
+        "bash-language-server",
+        "prettier",
+        "eslint_d",
+        "stylua",
+      },
+    },
+    config = function(_, opts)
+      require("mason").setup(opts)
+      local mr = require("mason-registry")
+      mr:on("package:install:success", function()
+        vim.defer_fn(function()
+          -- trigger FileType event to possibly load this newly installed LSP server
+          require("lazy.core.handler.event").trigger({
+            event = "FileType",
+            buf = vim.api.nvim_get_current_buf(),
+          })
+        end, 100)
+      end)
+      local function ensure_installed()
+        for _, tool in ipairs(opts.ensure_installed) do
+          local p = mr.get_package(tool)
+          if not p:is_installed() then
+            p:install()
+          end
+        end
+      end
+      if mr.refresh then
+        mr.refresh(ensure_installed)
+      else
+        ensure_installed()
+      end
+    end,
+  },
+
+  -- LSP Configuration
+  {
+    "neovim/nvim-lspconfig",
+    event = { "BufReadPre", "BufNewFile" },
+    dependencies = {
+      "mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
+    },
+    config = function()
+      -- Configure LSP servers
+      local lspconfig = require("lspconfig")
+      local mason_lspconfig = require("mason-lspconfig")
+      
+      -- Setup mason-lspconfig
+      mason_lspconfig.setup({
+        ensure_installed = {
+          "ts_ls", -- TypeScript/JavaScript
+          "html",
+          "cssls",
+          "lua_ls",
+          "jsonls",
+          "bashls",
+        },
+        automatic_installation = true,
+      })
+      
+      -- Configure diagnostics appearance to work well with Dracula Pro
+      vim.diagnostic.config({
+        virtual_text = {
+          prefix = "●", -- Could be '■', '▎', 'x'
+          source = "if_many",
+        },
+        signs = {
+          text = {
+            [vim.diagnostic.severity.ERROR] = "",
+            [vim.diagnostic.severity.WARN] = "",
+            [vim.diagnostic.severity.HINT] = "",
+            [vim.diagnostic.severity.INFO] = "",
+          },
+        },
+        underline = true,
+        update_in_insert = false,
+        severity_sort = true,
+        float = {
+          border = "rounded",
+          source = "always",
+          header = "",
+          prefix = "",
+        },
+      })
+      
+      -- Common LSP keybindings function
+      local function on_attach(client, bufnr)
+        local opts = { buffer = bufnr, silent = true }
+        
+        -- LSP keybindings
+        vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+        vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+        vim.keymap.set("n", "gI", vim.lsp.buf.implementation, opts)
+        vim.keymap.set("n", "gy", vim.lsp.buf.type_definition, opts)
+        vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+        vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+        vim.keymap.set("n", "gK", vim.lsp.buf.signature_help, opts)
+        vim.keymap.set("i", "<c-k>", vim.lsp.buf.signature_help, opts)
+        vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+        vim.keymap.set("n", "<leader>cr", vim.lsp.buf.rename, opts)
+        vim.keymap.set("n", "<leader>cR", vim.lsp.buf.rename, opts)
+        vim.keymap.set("n", "<leader>cf", function()
+          vim.lsp.buf.format({ async = true })
+        end, opts)
+      end
+      
+      -- Common capabilities for all LSP servers
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      capabilities.textDocument.completion.completionItem.snippetSupport = true
+      
+      -- Setup LSP servers
+      local servers = {
+        ts_ls = {
+          settings = {
+            typescript = {
+              inlayHints = {
+                includeInlayParameterNameHints = "all",
+                includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                includeInlayFunctionParameterTypeHints = true,
+                includeInlayVariableTypeHints = true,
+                includeInlayPropertyDeclarationTypeHints = true,
+                includeInlayFunctionLikeReturnTypeHints = true,
+                includeInlayEnumMemberValueHints = true,
+              },
+            },
+            javascript = {
+              inlayHints = {
+                includeInlayParameterNameHints = "all",
+                includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                includeInlayFunctionParameterTypeHints = true,
+                includeInlayVariableTypeHints = true,
+                includeInlayPropertyDeclarationTypeHints = true,
+                includeInlayFunctionLikeReturnTypeHints = true,
+                includeInlayEnumMemberValueHints = true,
+              },
+            },
+          },
+        },
+        html = {},
+        cssls = {
+          init_options = {
+            provideFormatter = true
+          },
+          settings = {
+            css = {
+              validate = false, -- Disable CSS validation completely for Tailwind v4
+            },
+            scss = {
+              validate = false,
+            },
+            less = {
+              validate = false,
+            }
+          }
+        },
+        jsonls = {
+          settings = {
+            json = {
+              schemas = require("schemastore").json.schemas(),
+              validate = { enable = true },
+            },
+          },
+        },
+        bashls = {},
+        lua_ls = {
+          settings = {
+            Lua = {
+              runtime = {
+                version = "LuaJIT",
+              },
+              diagnostics = {
+                globals = { "vim" },
+              },
+              workspace = {
+                library = vim.api.nvim_get_runtime_file("", true),
+                checkThirdParty = false,
+              },
+              telemetry = {
+                enable = false,
+              },
+            },
+          },
+        },
+      }
+      
+      -- Setup each server
+      for server, config in pairs(servers) do
+        config.on_attach = on_attach
+        config.capabilities = capabilities
+        lspconfig[server].setup(config)
+      end
+      
+      -- Setup Tailwind v4 support
+      require('config.tailwind-v4').setup()
+    end,
+  },
+  
+  -- JSON schemas for better JSON editing
+  { "b0o/schemastore.nvim", lazy = true },
+  
+  -- Mason-lspconfig bridge
+  {
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = { "mason.nvim" },
+    lazy = true,
+  },
+
+  -- ==========================================================================
+  -- AUTO-COMPLETION
+  -- ==========================================================================
+  
+  -- Main completion engine
+  {
+    "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",     -- LSP completions
+      "hrsh7th/cmp-buffer",       -- Buffer completions
+      "hrsh7th/cmp-path",         -- Path completions
+      "hrsh7th/cmp-cmdline",      -- Command line completions
+      "L3MON4D3/LuaSnip",         -- Snippet engine
+      "saadparwaiz1/cmp_luasnip", -- Snippet completions
+      "rafamadriz/friendly-snippets", -- Collection of snippets
+    },
+    config = function()
+      local cmp = require("cmp")
+      local luasnip = require("luasnip")
+      
+      -- Load friendly snippets
+      require("luasnip.loaders.from_vscode").lazy_load()
+      
+      cmp.setup({
+        enabled = false, -- Disable auto-popup completions
+        snippet = {
+          expand = function(args)
+            luasnip.lsp_expand(args.body)
+          end,
+        },
+        window = {
+          completion = {
+            border = "rounded",
+            winhighlight = "Normal:CmpPmenu,CursorLine:CmpSel,Search:None",
+          },
+          documentation = {
+            border = "rounded",
+          },
+        },
+        mapping = cmp.mapping.preset.insert({
+          ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+          ["<C-f>"] = cmp.mapping.scroll_docs(4),
+          ["<C-Space>"] = cmp.mapping.complete(), -- Manual trigger only
+          ["<C-e>"] = cmp.mapping.abort(),
+          ["<CR>"] = cmp.mapping.confirm({ select = true }),
+          -- Tab is now free for Supermaven
+          ["<Tab>"] = cmp.mapping(function(fallback)
+            fallback() -- Let Supermaven handle Tab
+          end, { "i", "s" }),
+          ["<S-Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item()
+            elseif luasnip.jumpable(-1) then
+              luasnip.jump(-1)
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+        }),
+        sources = cmp.config.sources({
+          { name = "nvim_lsp" },
+          { name = "luasnip" },
+        }, {
+          { name = "buffer" },
+          { name = "path" },
+        }),
+        formatting = {
+          format = function(entry, vim_item)
+            -- Define completion item kind icons
+            local icons = {
+              Text = "",
+              Method = "󰆧",
+              Function = "󰊕",
+              Constructor = "",
+              Field = "󰇽",
+              Variable = "󰂡",
+              Class = "󰠱",
+              Interface = "",
+              Module = "",
+              Property = "󰜢",
+              Unit = "",
+              Value = "󰎠",
+              Enum = "",
+              Keyword = "󰌋",
+              Snippet = "",
+              Color = "󰏘",
+              File = "󰈙",
+              Reference = "",
+              Folder = "󰉋",
+              EnumMember = "",
+              Constant = "󰏿",
+              Struct = "",
+              Event = "",
+              Operator = "󰆕",
+              TypeParameter = "󰅲",
+            }
+            
+            vim_item.kind = string.format('%s %s', icons[vim_item.kind], vim_item.kind)
+            vim_item.menu = ({
+              nvim_lsp = "[LSP]",
+              luasnip = "[Snippet]",
+              buffer = "[Buffer]",
+              path = "[Path]",
+            })[entry.source.name]
+            
+            return vim_item
+          end,
+        },
+      })
+      
+      -- Setup cmdline completion
+      cmp.setup.cmdline('/', {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = {
+          { name = 'buffer' }
+        }
+      })
+      
+      cmp.setup.cmdline(':', {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = cmp.config.sources({
+          { name = 'path' }
+        }, {
+          { name = 'cmdline' }
+        })
+      })
+    end,
+  },
+  
+  -- Snippet dependencies for nvim-cmp
+  {
+    "L3MON4D3/LuaSnip",
+    build = "make install_jsregexp",
+    dependencies = {
+      "rafamadriz/friendly-snippets",
+    },
+  },
+
+  -- ==========================================================================
   -- TEXT MANIPULATION AND EDITING
   -- ==========================================================================
-    {
-      "supermaven-inc/supermaven-nvim",
-      config = function()
-        require("supermaven-nvim").setup({})
-      end,
+  
+  -- AI-powered code completion
+  {
+    "supermaven-inc/supermaven-nvim",
+    config = function()
+      require("supermaven-nvim").setup({
+        keymaps = {
+          accept_suggestion = "<Tab>",
+          clear_suggestion = "<C-]>",
+          accept_word = "<C-j>",
+        },
+        ignore_filetypes = {},
+        color = {
+          suggestion_color = "#808080",
+          cterm = 244,
+        },
+        disable_inline_completion = false, -- Keep inline completion enabled
+        disable_keymaps = false, -- Use our custom keymaps
+      })
+    end,
+  },
+  -- ==========================================================================
+  -- FILE EXPLORER AND NAVIGATION
+  -- ==========================================================================
+  
+  -- Modern file explorer with git integration
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    cmd = "Neotree",
+    keys = {
+      { "<leader>fe", "<cmd>Neotree toggle<cr>", desc = "Explorer NeoTree (root dir)" },
+      { "<leader>fE", "<cmd>Neotree toggle float<cr>", desc = "Explorer NeoTree (float)" },
+      { "<leader>e", "<cmd>Neotree focus<cr>", desc = "Explorer NeoTree (focus)" },
     },
+    deactivate = function()
+      vim.cmd([[Neotree close]])
+    end,
+    init = function()
+      if vim.fn.argc(-1) == 1 then
+        local stat = vim.loop.fs_stat(vim.fn.argv(0))
+        if stat and stat.type == "directory" then
+          require("neo-tree")
+        end
+      end
+    end,
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+      "MunifTanjim/nui.nvim",
+    },
+    config = function()
+      -- Configure Neo-tree to work well with Dracula Pro
+      require("neo-tree").setup({
+        close_if_last_window = false,
+        popup_border_style = "rounded",
+        enable_git_status = true,
+        enable_diagnostics = true,
+        open_files_do_not_replace_types = { "terminal", "trouble", "qf" },
+        sort_case_insensitive = false,
+        retain_hidden_root_indent = false,
+        resize_timer_interval = 500, -- Delay between window resizes
+        auto_clean_after_session_restore = true,
+        default_component_configs = {
+          container = {
+            enable_character_fade = true
+          },
+          indent = {
+            indent_size = 2,
+            padding = 1,
+            with_markers = true,
+            indent_marker = "│",
+            last_indent_marker = "└",
+            highlight = "NeoTreeIndentMarker",
+            with_expanders = nil,
+            expander_collapsed = "",
+            expander_expanded = "",
+            expander_highlight = "NeoTreeExpander",
+          },
+          icon = {
+            folder_closed = "",
+            folder_open = "",
+            folder_empty = "",
+            default = "*",
+            highlight = "NeoTreeFileIcon"
+          },
+          modified = {
+            symbol = "[+]",
+            highlight = "NeoTreeModified",
+          },
+          name = {
+            trailing_slash = false,
+            use_git_status_colors = true,
+            highlight = "NeoTreeFileName",
+          },
+          git_status = {
+            symbols = {
+              added     = "",
+              modified  = "",
+              deleted   = "✖",
+              renamed   = "",
+              untracked = "",
+              ignored   = "",
+              unstaged  = "",
+              staged    = "",
+              conflict  = "",
+            }
+          },
+        },
+        window = {
+          position = "left",
+          width = 40,
+          auto_expand_width = false, -- Don't auto-expand width
+          mapping_options = {
+            noremap = true,
+            nowait = true,
+          },
+          mappings = {
+            ["<space>"] = {
+                "toggle_node",
+                nowait = false,
+            },
+            ["<2-LeftMouse>"] = {
+              "open",
+              nowait = false,
+            },
+            ["<cr>"] = {
+              "open", 
+              nowait = false,
+            },
+            ["<esc>"] = "revert_preview",
+            ["P"] = { "toggle_preview", config = { use_float = true } },
+            -- Arrow key navigation - simplified and reliable
+            ["<Right>"] = {
+              "toggle_node",
+              nowait = false,
+            },
+            ["<Left>"] = "close_node", 
+            ["h"] = "close_node",
+            ["l"] = {
+              "toggle_node",
+              nowait = false,
+            },
+            ["S"] = "open_split",
+            ["s"] = "open_vsplit",
+            ["t"] = "open_tabnew",
+            ["w"] = "open_with_window_picker",
+            ["C"] = "close_node",
+            ["z"] = "close_all_nodes",
+            ["a"] = {
+              "add",
+              config = {
+                show_path = "none"
+              }
+            },
+            ["A"] = "add_directory",
+            ["d"] = "delete",
+            ["r"] = "rename",
+            ["y"] = "copy_to_clipboard",
+            ["x"] = "cut_to_clipboard",
+            ["p"] = "paste_from_clipboard",
+            ["c"] = "copy",
+            ["m"] = "move",
+            ["q"] = "close_window",
+            ["R"] = "refresh",
+            ["?"] = "show_help",
+            ["<"] = "prev_source",
+            [">"] = "next_source",
+          }
+        },
+        filesystem = {
+          filtered_items = {
+            visible = false,
+            hide_dotfiles = true,
+            hide_gitignored = true,
+            hide_hidden = true,
+            hide_by_name = {
+              "node_modules"
+            },
+            hide_by_pattern = {
+              "*.meta",
+              "*/src/*/tsconfig.json",
+            },
+            always_show = {
+              ".gitignored",
+            },
+            never_show = {
+              ".DS_Store",
+              "thumbs.db"
+            },
+          },
+          follow_current_file = {
+            enabled = false,
+            leave_dirs_open = false,
+          },
+          group_empty_dirs = false,
+          hijack_netrw_behavior = "open_default",
+          use_libuv_file_watcher = false,
+        },
+        buffers = {
+          follow_current_file = {
+            enabled = true,
+            leave_dirs_open = false,
+          },
+          group_empty_dirs = true,
+          show_unloaded = true,
+        },
+        git_status = {
+          window = {
+            position = "float",
+            mappings = {
+              ["A"]  = "git_add_all",
+              ["gu"] = "git_unstage_file",
+              ["ga"] = "git_add_file",
+              ["gr"] = "git_revert_file",
+              ["gc"] = "git_commit",
+              ["gp"] = "git_push",
+              ["gg"] = "git_commit_and_push",
+            }
+          }
+        }
+      })
+      
+      -- Custom highlight groups for Dracula Pro compatibility
+      vim.cmd([[
+        hi NeoTreeNormal guibg=#282a36
+        hi NeoTreeNormalNC guibg=#282a36
+        hi NeoTreeVertSplit guifg=#44475a guibg=#282a36
+        hi NeoTreeWinSeparator guifg=#44475a guibg=#282a36
+        hi NeoTreeEndOfBuffer guibg=#282a36
+      ]])
+      
+      -- Fix window sizing issues when files are opened/closed
+      local function fix_neotree_width()
+        local neotree_win = nil
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          local buf = vim.api.nvim_win_get_buf(win)
+          local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
+          if ft == 'neo-tree' then
+            neotree_win = win
+            break
+          end
+        end
+        
+        if neotree_win then
+          vim.api.nvim_win_set_width(neotree_win, 40)
+        end
+      end
+      
+      -- Auto-resize Neo-tree and manage window focus
+      vim.api.nvim_create_autocmd({"BufEnter", "WinEnter"}, {
+        callback = function()
+          -- Small delay to ensure window layout is stable
+          vim.defer_fn(function()
+            pcall(fix_neotree_width) -- Use pcall to prevent errors
+          end, 50)
+        end,
+        desc = "Fix Neo-tree width after opening files"
+      })
+      
+      -- Better window focus management when closing buffers
+      vim.api.nvim_create_autocmd("BufWinLeave", {
+        callback = function()
+          -- Check if we're closing a regular file buffer
+          if vim.bo.buftype == '' then
+            vim.defer_fn(function()
+              -- Find all non-Neo-tree windows
+              local windows = vim.api.nvim_list_wins()
+              local file_windows = {}
+              
+              for _, win in ipairs(windows) do
+                local buf = vim.api.nvim_win_get_buf(win)
+                local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
+                local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
+                
+                -- Collect windows that contain regular files (not Neo-tree or special buffers)
+                if ft ~= 'neo-tree' and bt == '' then
+                  table.insert(file_windows, win)
+                end
+              end
+              
+              -- If there are file windows, focus on the first one
+              if #file_windows > 0 then
+                vim.api.nvim_set_current_win(file_windows[1])
+                fix_neotree_width() -- Also fix Neo-tree width
+              end
+            end, 10)
+          end
+        end,
+        desc = "Focus on file window after closing buffer, not Neo-tree"
+      })
+    end,
+  },
+  
+  -- Window picker for Neo-tree
+  {
+    "s1n7ax/nvim-window-picker",
+    name = "window-picker",
+    event = "VeryLazy",
+    version = "2.*",
+    config = function()
+      require("window-picker").setup({
+        autoselect_one = true,
+        include_current = false,
+        filter_rules = {
+          bo = {
+            filetype = { "neo-tree", "neo-tree-popup", "notify" },
+            buftype = { "terminal", "quickfix" },
+          },
+        },
+        other_win_hl_color = "#e06c75",
+      })
+    end,
+  },
+
   -- ==========================================================================
   -- FUZZY FINDING AND FILE NAVIGATION
   -- ==========================================================================
@@ -199,12 +871,9 @@ require("lazy").setup({
       { "<C-E>", ":Rg<CR>", desc = "Search text in files" },
     },
     config = function()
-      -- Custom Rg command that excludes filenames from search results
-      -- This makes text search cleaner by showing only file content matches
-      vim.cmd([[
-        command! -bang -nargs=* Rg call fzf#vim#grep("rg --column --line-number --no-heading --color=always --smart-case ".shellescape(<q-args>), 1, {'options': '--delimiter : --nth 4..'}, <bang>0)
-        command! -bang -nargs=? -complete=dir Files call fzf#vim#files(<q-args>, fzf#vim#with_preview({'options': ['--layout=reverse', '--info=inline']}), <bang>0)
-      ]])
+      -- Minimal FZF configuration to avoid conflicts
+      vim.g.fzf_layout = { down = '~40%' }
+      -- Don't override any default commands, use FZF defaults
     end,
   },
 
@@ -320,6 +989,438 @@ require("lazy").setup({
   { "tmux-plugins/vim-tmux", ft = "tmux" },
 
   -- ==========================================================================
+  -- KEY DISCOVERY AND HELP
+  -- ==========================================================================
+  
+  -- Which-key: Shows available keybindings in popup
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    init = function()
+      vim.o.timeout = true
+      vim.o.timeoutlen = 300
+    end,
+    config = function()
+      local wk = require("which-key")
+      wk.setup({
+        win = {
+          border = "rounded",
+          position = "bottom",
+          margin = { 1, 0, 1, 0 },
+          padding = { 2, 2, 2, 2 },
+          winblend = 0,
+        },
+        layout = {
+          height = { min = 4, max = 25 },
+          width = { min = 20, max = 50 },
+          spacing = 3,
+          align = "left",
+        },
+        filter = function(mapping)
+          -- Ignore mappings with these patterns
+          local hidden_patterns = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^", ":" }
+          for _, pattern in ipairs(hidden_patterns) do
+            if mapping.desc and mapping.desc:find(pattern) then
+              return false
+            end
+          end
+          return true
+        end,
+        show_help = true,
+        triggers = {
+          { "<auto>", mode = "nxsot" },
+          { "<leader>", mode = { "n", "v" } },
+        },
+      })
+      
+      -- Register key groups using new spec format
+      wk.add({
+        { "<leader>f", group = "file/find" },
+        { "<leader>c", group = "code" },
+        { "<leader>g", group = "git" },
+        { "<leader>x", group = "diagnostics/quickfix" },
+        { "<leader>s", group = "search" },
+        { "<leader>u", group = "ui" },
+        { "<leader>w", group = "windows" },
+        { "<leader>t", group = "terminal" },
+      })
+    end,
+  },
+
+  -- ==========================================================================
+  -- GIT INTEGRATION ENHANCEMENTS
+  -- ==========================================================================
+  
+  -- Git signs in the gutter
+  {
+    "lewis6991/gitsigns.nvim",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      require("gitsigns").setup({
+        signs = {
+          add          = { text = '│' },
+          change       = { text = '│' },
+          delete       = { text = '_' },
+          topdelete    = { text = '‾' },
+          changedelete = { text = '~' },
+          untracked    = { text = '┆' },
+        },
+        signcolumn = true,
+        numhl = false,
+        linehl = false,
+        word_diff = false,
+        watch_gitdir = {
+          interval = 1000,
+          follow_files = true
+        },
+        attach_to_untracked = true,
+        current_line_blame = false,
+        current_line_blame_opts = {
+          virt_text = true,
+          virt_text_pos = 'eol',
+          delay = 1000,
+          ignore_whitespace = false,
+        },
+        sign_priority = 6,
+        update_debounce = 100,
+        status_formatter = nil,
+        max_file_length = 40000,
+        preview_config = {
+          border = 'single',
+          style = 'minimal',
+          relative = 'cursor',
+          row = 0,
+          col = 1
+        },
+        on_attach = function(bufnr)
+          local gs = package.loaded.gitsigns
+          
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
+          
+          -- Navigation
+          map('n', ']c', function()
+            if vim.wo.diff then return ']c' end
+            vim.schedule(function() gs.next_hunk() end)
+            return '<Ignore>'
+          end, {expr=true})
+          
+          map('n', '[c', function()
+            if vim.wo.diff then return '[c' end
+            vim.schedule(function() gs.prev_hunk() end)
+            return '<Ignore>'
+          end, {expr=true})
+          
+          -- Actions
+          map('n', '<leader>gs', gs.stage_hunk, { desc = "Stage hunk" })
+          map('n', '<leader>gr', gs.reset_hunk, { desc = "Reset hunk" })
+          map('v', '<leader>gs', function() gs.stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = "Stage hunk" })
+          map('v', '<leader>gr', function() gs.reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = "Reset hunk" })
+          map('n', '<leader>gS', gs.stage_buffer, { desc = "Stage buffer" })
+          map('n', '<leader>gu', gs.undo_stage_hunk, { desc = "Undo stage hunk" })
+          map('n', '<leader>gR', gs.reset_buffer, { desc = "Reset buffer" })
+          map('n', '<leader>gp', gs.preview_hunk, { desc = "Preview hunk" })
+          map('n', '<leader>gb', function() gs.blame_line{full=true} end, { desc = "Blame line" })
+          map('n', '<leader>gtb', gs.toggle_current_line_blame, { desc = "Toggle line blame" })
+          map('n', '<leader>gd', gs.diffthis, { desc = "Diff this" })
+          map('n', '<leader>gD', function() gs.diffthis('~') end, { desc = "Diff this ~" })
+          map('n', '<leader>gtd', gs.toggle_deleted, { desc = "Toggle deleted" })
+          
+          -- Text object
+          map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>', { desc = "Select hunk" })
+        end
+      })
+    end,
+  },
+
+  -- ==========================================================================
+  -- FORMATTING AND LINTING
+  -- ==========================================================================
+  
+  -- Modern formatter
+  {
+    "stevearc/conform.nvim",
+    event = { "BufWritePre" },
+    cmd = { "ConformInfo" },
+    keys = {
+      {
+        "<leader>cf",
+        function()
+          require("conform").format({ async = true, lsp_fallback = true })
+        end,
+        mode = "",
+        desc = "Format buffer",
+      },
+    },
+    opts = {
+      formatters_by_ft = {
+        lua = { "stylua" },
+        fish = { "fish_indent" },
+        sh = { "shfmt" },
+        javascript = { "prettierd", "prettier", stop_after_first = true },
+        typescript = { "prettierd", "prettier", stop_after_first = true },
+        javascriptreact = { "prettierd", "prettier", stop_after_first = true },
+        typescriptreact = { "prettierd", "prettier", stop_after_first = true },
+        vue = { "prettierd", "prettier", stop_after_first = true },
+        css = { "prettierd", "prettier", stop_after_first = true },
+        scss = { "prettierd", "prettier", stop_after_first = true },
+        less = { "prettierd", "prettier", stop_after_first = true },
+        html = { "prettierd", "prettier", stop_after_first = true },
+        json = { "prettierd", "prettier", stop_after_first = true },
+        jsonc = { "prettierd", "prettier", stop_after_first = true },
+        yaml = { "prettierd", "prettier", stop_after_first = true },
+        markdown = { "prettierd", "prettier", stop_after_first = true },
+        graphql = { "prettierd", "prettier", stop_after_first = true },
+        handlebars = { "prettier" },
+      },
+      format_on_save = {
+        timeout_ms = 500,
+        lsp_fallback = true,
+      },
+      formatters = {
+        shfmt = {
+          prepend_args = { "-i", "2" },
+        },
+      },
+    },
+    init = function()
+      vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
+    end,
+  },
+  
+  -- Linting
+  {
+    "mfussenegger/nvim-lint",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      local lint = require("lint")
+      
+      lint.linters_by_ft = {
+        -- Disabled eslint_d due to parsing errors - using LSP diagnostics instead
+        -- javascript = { "eslint_d" },
+        -- typescript = { "eslint_d" },
+        -- javascriptreact = { "eslint_d" },
+        -- typescriptreact = { "eslint_d" },
+        -- svelte = { "eslint_d" },
+        python = { "pylint" },
+        -- Note: CSS linting disabled to avoid conflicts with Tailwind CSS v4 at-rules
+        -- css = {},  -- Explicitly empty to disable CSS linting
+      }
+      
+      local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
+      
+      vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
+        group = lint_augroup,
+        callback = function()
+          lint.try_lint()
+        end,
+      })
+      
+      vim.keymap.set("n", "<leader>cl", function()
+        lint.try_lint()
+      end, { desc = "Trigger linting for current file" })
+    end,
+  },
+
+  -- ==========================================================================
+  -- DIAGNOSTICS AND TROUBLE SHOOTING
+  -- ==========================================================================
+  
+  -- Better diagnostics list
+  {
+    "folke/trouble.nvim",
+    cmd = { "TroubleToggle", "Trouble" },
+    keys = {
+      { "<leader>xx", "<cmd>TroubleToggle<cr>", desc = "Toggle Trouble" },
+      { "<leader>xw", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "Workspace Diagnostics" },
+      { "<leader>xd", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "Document Diagnostics" },
+      { "<leader>xl", "<cmd>TroubleToggle loclist<cr>", desc = "Location List" },
+      { "<leader>xq", "<cmd>TroubleToggle quickfix<cr>", desc = "Quickfix List" },
+      { "gR", "<cmd>TroubleToggle lsp_references<cr>", desc = "LSP References" },
+    },
+    config = function()
+      require("trouble").setup({
+        position = "bottom",
+        height = 10,
+        width = 50,
+        icons = true,
+        mode = "workspace_diagnostics",
+        fold_open = "",
+        fold_closed = "",
+        group = true,
+        padding = true,
+        action_keys = {
+          close = "q",
+          cancel = "<esc>",
+          refresh = "r",
+          jump = { "<cr>", "<tab>" },
+          open_split = { "<c-x>" },
+          open_vsplit = { "<c-v>" },
+          open_tab = { "<c-t>" },
+          jump_close = { "o" },
+          toggle_mode = "m",
+          toggle_preview = "P",
+          hover = "K",
+          preview = "p",
+          close_folds = { "zM", "zm" },
+          open_folds = { "zR", "zr" },
+          toggle_fold = { "zA", "za" },
+          previous = "k",
+          next = "j"
+        },
+        indent_lines = true,
+        auto_open = false,
+        auto_close = false,
+        auto_preview = true,
+        auto_fold = false,
+        auto_jump = { "lsp_definitions" },
+        signs = {
+          error = "",
+          warning = "",
+          hint = "",
+          information = "",
+          other = "﫠"
+        },
+        use_diagnostic_signs = false
+      })
+    end,
+  },
+
+  -- ==========================================================================
+  -- DASHBOARD AND SESSION MANAGEMENT
+  -- ==========================================================================
+  
+  -- Startup dashboard
+  {
+    "goolord/alpha-nvim",
+    event = "VimEnter",
+    config = function()
+      local alpha = require("alpha")
+      local dashboard = require("alpha.themes.dashboard")
+      
+      -- Set header
+      dashboard.section.header.val = {
+        "                                                     ",
+        "  ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗ ",
+        "  ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║ ",
+        "  ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║ ",
+        "  ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║ ",
+        "  ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║ ",
+        "  ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝ ",
+        "                                                     ",
+        "        🧛‍♂️ Dracula Pro Edition 🧛‍♂️                    ",
+        "                                                     ",
+      }
+      
+      -- Set menu
+      dashboard.section.buttons.val = {
+        dashboard.button("f", "  Find file", ":Telescope find_files <CR>"),
+        dashboard.button("e", "  New file", ":ene <BAR> startinsert <CR>"),
+        dashboard.button("r", "  Recently used files", ":Telescope oldfiles <CR>"),
+        dashboard.button("t", "  Find text", ":Telescope live_grep <CR>"),
+        dashboard.button("c", "  Configuration", ":e ~/.config/nvim/init.lua <CR>"),
+        dashboard.button("q", "  Quit Neovim", ":qa<CR>"),
+      }
+      
+      -- Set footer
+      local function footer()
+        local total_plugins = #vim.tbl_keys(packer_plugins or {})
+        local datetime = os.date(" %d-%m-%Y   %H:%M:%S")
+        local version = vim.version()
+        local nvim_version_info = "   v" .. version.major .. "." .. version.minor .. "." .. version.patch
+        
+        return datetime .. "   " .. total_plugins .. " plugins" .. nvim_version_info
+      end
+      
+      dashboard.section.footer.val = footer()
+      
+      dashboard.section.footer.opts.hl = "Type"
+      dashboard.section.header.opts.hl = "Include"
+      dashboard.section.buttons.opts.hl = "Keyword"
+      
+      dashboard.opts.opts.noautocmd = true
+      alpha.setup(dashboard.opts)
+    end,
+  },
+  
+  -- Session persistence
+  {
+    "folke/persistence.nvim",
+    event = "BufReadPre",
+    keys = {
+      { "<leader>qs", function() require("persistence").load() end, desc = "Restore Session" },
+      { "<leader>ql", function() require("persistence").load({ last = true }) end, desc = "Restore Last Session" },
+      { "<leader>qd", function() require("persistence").stop() end, desc = "Don't Save Current Session" },
+    },
+    config = function()
+      require("persistence").setup({
+        dir = vim.fn.expand(vim.fn.stdpath("state") .. "/sessions/"),
+        options = { "buffers", "curdir", "tabpages", "winsize", "help", "globals", "skiprtp" },
+        pre_save = nil,
+      })
+    end,
+  },
+
+  -- ==========================================================================
+  -- TERMINAL INTEGRATION
+  -- ==========================================================================
+  
+  -- Better terminal integration
+  {
+    "akinsho/toggleterm.nvim",
+    version = "*",
+    keys = {
+      { "<leader>i", function() require("config.claude-terminal").toggle_claude() end, desc = "Toggle Claude Terminal" },
+    },
+    config = function()
+      require("toggleterm").setup({
+        size = function(term)
+          if term.direction == "horizontal" then
+            return 15
+          elseif term.direction == "vertical" then
+            return vim.o.columns * 0.4
+          end
+        end,
+        open_mapping = [[<c-\>]],
+        hide_numbers = true,
+        shade_filetypes = {},
+        shade_terminals = true,
+        shading_factor = 2,
+        start_in_insert = true,
+        insert_mappings = true,
+        persist_size = true,
+        direction = "vertical",
+        close_on_exit = true,
+        shell = vim.o.shell,
+        float_opts = {
+          border = "curved",
+          winblend = 0,
+          highlights = {
+            border = "Normal",
+            background = "Normal",
+          },
+        },
+      })
+      
+      -- Set terminal keymaps
+      function _G.set_terminal_keymaps()
+        local opts = {buffer = 0}
+        vim.keymap.set('t', '<esc>', [[<C-\><C-n>]], opts)
+        vim.keymap.set('t', 'jk', [[<C-\><C-n>]], opts)
+        vim.keymap.set('t', '<C-h>', [[<Cmd>wincmd h<CR>]], opts)
+        vim.keymap.set('t', '<C-j>', [[<Cmd>wincmd j<CR>]], opts)
+        vim.keymap.set('t', '<C-k>', [[<Cmd>wincmd k<CR>]], opts)
+        vim.keymap.set('t', '<C-l>', [[<Cmd>wincmd l<CR>]], opts)
+      end
+      
+      vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
+    end,
+  },
+
+  -- ==========================================================================
   -- UTILITY PLUGINS
   -- ==========================================================================
 
@@ -338,8 +1439,41 @@ require("lazy").setup({
   -- Show indentation guides
   { "Yggdroot/indentLine", event = "BufRead" },
 
-  -- Auto-close brackets, quotes, etc.
-  { "jiangmiao/auto-pairs", event = "InsertEnter" },
+  -- Modern auto-pairs plugin (better than the old auto-pairs)
+  {
+    "windwp/nvim-autopairs",
+    event = "InsertEnter",
+    config = function()
+      require("nvim-autopairs").setup({
+        check_ts = true,
+        ts_config = {
+          lua = { "string", "source" },
+          javascript = { "string", "template_string" },
+          java = false,
+        },
+        disable_filetype = { "TelescopePrompt", "spectre_panel" },
+        fast_wrap = {
+          map = "<M-e>",
+          chars = { "{", "[", "(", '"', "'" },
+          pattern = string.gsub([[ [%'%"%)%>%]%)%}%,] ]], "%s+", ""),
+          offset = 0,
+          end_key = "$",
+          keys = "qwertyuiopzxcvbnmasdfghjkl",
+          check_comma = true,
+          highlight = "PmenuSel",
+          highlight_grey = "LineNr",
+        },
+      })
+      
+      -- Add support for Liquid files
+      local Rule = require('nvim-autopairs.rule')
+      local npairs = require('nvim-autopairs')
+      npairs.add_rules({
+        Rule("{%", "%}", "liquid"),
+        Rule("{{", "}}", "liquid"),
+      })
+    end,
+  },
 
   -- Align text (e.g., align = signs in multiple lines)
   { "godlygeek/tabular", cmd = "Tabularize" },
@@ -360,8 +1494,14 @@ require("lazy").setup({
   -- ICONS AND UI ENHANCEMENTS
   -- ==========================================================================
 
-  -- File type icons for various plugins
-  { "kyazdani42/nvim-web-devicons", lazy = true },
+  -- File type icons for various plugins (updated package)
+  { "nvim-tree/nvim-web-devicons", lazy = true },
+  
+  -- Plenary: Required by many plugins
+  { "nvim-lua/plenary.nvim", lazy = true },
+  
+  -- UI components library
+  { "MunifTanjim/nui.nvim", lazy = true },
 
 }, {
   -- ==========================================================================
@@ -373,6 +1513,9 @@ require("lazy").setup({
       width = 0.8,       -- 80% of screen width
       height = 0.8,      -- 80% of screen height
     },
+  },
+  rocks = {
+    enabled = false,     -- Disable luarocks support (no plugins need it)
   },
   performance = {
     rtp = {
@@ -404,11 +1547,7 @@ vim.g.EasyMotion_smartcase = 1
 -- Define which file types should have auto-closing tags
 vim.g.closetag_filenames = '*.html,*.xhtml,*.phtml,*.liquid'
 
--- AUTO-PAIRS CONFIGURATION
--- Disable fly mode (auto-completion while typing)
-vim.g.AutoPairsFlyMode = 0
--- Set shortcut for jumping back to previous auto-pair
-vim.g.AutoPairsShortcutBackInsert = '<M-b>'
+-- AUTO-PAIRS CONFIGURATION - Plugin removed due to conflicts
 
 -- JSON AND MARKDOWN DISPLAY
 -- Disable concealing of JSON syntax (show actual quotes, brackets)

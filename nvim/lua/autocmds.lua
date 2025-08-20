@@ -220,8 +220,8 @@ autocmd('BufEnter', {
   callback = function()
     -- Only check if we're in a normal buffer (not terminal, help, etc.)
     -- Prevents unnecessary checks on special buffer types
-    if vim.bo.buftype == '' then
-      vim.cmd('checktime')
+    if vim.bo.buftype == '' and not vim.bo.modified then
+      pcall(vim.cmd, 'checktime')
     end
   end,
   desc = 'Check for external file changes when entering a buffer'
@@ -238,6 +238,38 @@ autocmd('BufEnter', {
 -- Useful when you suspect files have changed but auto-detection hasn't triggered
 vim.api.nvim_create_user_command('CheckTime', 'checktime', {
   desc = 'Check for external file changes in all buffers'
+})
+
+-- SMART WINDOW CLOSE
+-- Override :q to focus on next file window instead of Neo-tree
+vim.api.nvim_create_autocmd("CmdlineLeave", {
+  pattern = "*",
+  callback = function()
+    local cmd = vim.fn.getcmdline()
+    if cmd == "q" or cmd == "q!" then
+      -- Before the quit happens, ensure Neo-tree isn't expanding
+      vim.defer_fn(function()
+        local windows = vim.api.nvim_list_wins()
+        local file_windows = {}
+        
+        for _, win in ipairs(windows) do
+          local buf = vim.api.nvim_win_get_buf(win)
+          local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
+          local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
+          
+          if ft ~= 'neo-tree' and bt == '' then
+            table.insert(file_windows, win)
+          end
+        end
+        
+        -- If there are file windows, ensure one is focused
+        if #file_windows > 0 then
+          pcall(vim.api.nvim_set_current_win, file_windows[1])
+        end
+      end, 5)
+    end
+  end,
+  desc = "Ensure focus stays on file windows after :q"
 })
 
 -- SAFE BUFFER RELOADING
@@ -332,17 +364,74 @@ autocmd('BufWritePost', {
 })
 
 -- =============================================================================
+-- MODERN PLUGIN THEME COMPATIBILITY
+-- =============================================================================
+-- Ensure new plugins work well with Dracula Pro theme
+
+-- LSP and completion menu colors
+autocmd('ColorScheme', {
+  callback = function()
+    vim.defer_fn(function()
+      -- LSP diagnostic signs
+      vim.cmd('hi DiagnosticSignError guifg=#FF5555')
+      vim.cmd('hi DiagnosticSignWarn guifg=#FFB86C')
+      vim.cmd('hi DiagnosticSignInfo guifg=#8BE9FD')
+      vim.cmd('hi DiagnosticSignHint guifg=#50FA7B')
+      
+      -- Completion menu
+      vim.cmd('hi CmpPmenu guibg=#282a36')
+      vim.cmd('hi CmpSel guibg=#44475a guifg=#f8f8f2')
+      vim.cmd('hi CmpDocumentation guibg=#282a36')
+      vim.cmd('hi CmpDocumentationBorder guifg=#6272a4')
+      
+      -- Which-key popup
+      vim.cmd('hi WhichKey guifg=#8be9fd')
+      vim.cmd('hi WhichKeyGroup guifg=#50fa7b')
+      vim.cmd('hi WhichKeyDesc guifg=#f8f8f2')
+      vim.cmd('hi WhichKeyFloat guibg=#282a36')
+      vim.cmd('hi WhichKeyBorder guifg=#6272a4')
+      
+      -- Trouble.nvim
+      vim.cmd('hi TroubleText guifg=#f8f8f2')
+      vim.cmd('hi TroubleCount guifg=#6272a4')
+      vim.cmd('hi TroubleNormal guibg=#282a36')
+      
+      -- Alpha dashboard
+      vim.cmd('hi AlphaShortcut guifg=#bd93f9')
+      vim.cmd('hi AlphaHeader guifg=#ff79c6')
+      vim.cmd('hi AlphaHeaderLabel guifg=#8be9fd')
+      vim.cmd('hi AlphaButtons guifg=#f8f8f2')
+      vim.cmd('hi AlphaFooter guifg=#6272a4')
+      
+      -- Neo-tree specific highlights
+      vim.cmd('hi NeoTreeDirectoryIcon guifg=#8be9fd')
+      vim.cmd('hi NeoTreeDirectoryName guifg=#8be9fd')
+      vim.cmd('hi NeoTreeFileName guifg=#f8f8f2')
+      vim.cmd('hi NeoTreeFileIcon guifg=#f8f8f2')
+      vim.cmd('hi NeoTreeModified guifg=#ffb86c')
+      vim.cmd('hi NeoTreeGitAdded guifg=#50fa7b')
+      vim.cmd('hi NeoTreeGitDeleted guifg=#ff5555')
+      vim.cmd('hi NeoTreeGitModified guifg=#ffb86c')
+      vim.cmd('hi NeoTreeGitConflict guifg=#ff79c6')
+      vim.cmd('hi NeoTreeGitUntracked guifg=#6272a4')
+      
+      -- Gitsigns
+      vim.cmd('hi GitSignsAdd guifg=#50fa7b')
+      vim.cmd('hi GitSignsChange guifg=#ffb86c')
+      vim.cmd('hi GitSignsDelete guifg=#ff5555')
+      vim.cmd('hi GitSignsCurrentLineBlame guifg=#6272a4')
+    end, 100)
+  end,
+  desc = 'Apply Dracula Pro colors to modern plugins'
+})
+
+-- =============================================================================
 -- ADDITIONAL AUTOCOMMAND IDEAS
 -- =============================================================================
 -- You can add more autocommands here for additional functionality:
 
--- Auto-format on save:
-autocmd('BufWritePre', {
-  pattern = '*.lua',
-  callback = function()
-    vim.lsp.buf.format({ async = false })
-  end,
-})
+-- Auto-format on save is handled by conform.nvim's format_on_save option
+-- Removed duplicate BufWritePre autocmd to avoid conflicts
 
 -- Highlight yanked text:
 autocmd('TextYankPost', {

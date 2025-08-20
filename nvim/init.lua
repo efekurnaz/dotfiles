@@ -25,6 +25,13 @@ if vim.o.shell:match('fish$') then
 end
 
 -- =============================================================================
+-- PROVIDER CONFIGURATION
+-- =============================================================================
+-- Disable optional providers that we don't use to reduce startup warnings
+vim.g.loaded_perl_provider = 0    -- Disable Perl provider
+vim.g.loaded_ruby_provider = 0    -- Disable Ruby provider
+
+-- =============================================================================
 -- MODULE LOADING
 -- =============================================================================
 -- Load all configuration modules in the correct order

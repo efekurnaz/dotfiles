@@ -39,6 +39,14 @@ local function map(mode, lhs, rhs, opts)
 end
 
 -- =============================================================================
+-- LEADER KEY CONFIGURATION
+-- =============================================================================
+-- Set leader key to space for better ergonomics
+-- This must be set before any leader key mappings
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
+
+-- =============================================================================
 -- COMMAND MODE SHORTCUTS
 -- =============================================================================
 -- Make it easier to enter command mode
@@ -51,6 +59,7 @@ map('n', '<space>', ':')
 -- FILE NAVIGATION AND FUZZY FINDING
 -- =============================================================================
 -- These mappings use FZF (Fuzzy Finder) for quick file and text searching
+-- and Neo-tree for modern file exploration
 
 -- Find ALL files (including uncommitted) but respects .gitignore
 -- Shows all files in project directory in a fuzzy searchable list
@@ -64,8 +73,28 @@ map('n', '<C-[>', ':GFiles?<CR>')
 -- Searches through file contents, not just filenames
 map('n', '<C-E>', ':Rg<CR>')
 
--- File explorer with Ctrl+O (since Ctrl+P now does fuzzy file search)
+-- Modern file explorer with Neo-tree
+map('n', '<leader>e', ':Neotree focus<CR>', { desc = 'Focus file explorer' })
+map('n', '<leader>fe', ':Neotree toggle<CR>', { desc = 'Toggle file explorer' })
+map('n', '<leader>fE', ':Neotree toggle float<CR>', { desc = 'Float file explorer' })
+
+-- Legacy file explorer (kept for compatibility)
 map('n', '<C-O>', ':Ex<CR>')               -- Built-in file explorer (shorter command)
+
+-- =============================================================================
+-- TERMINAL INTEGRATION
+-- =============================================================================
+-- Quick access to Claude Code terminal
+
+-- Toggle Claude terminal on the right (hide/show)
+map('n', '<leader>i', function()
+  require('config.claude-terminal').toggle_claude()
+end, { desc = 'Toggle Claude terminal' })
+
+-- Completely close Claude terminal (end session)
+map('n', '<leader>I', function()
+  require('config.claude-terminal').close_claude()
+end, { desc = 'Close Claude session' })
 
 -- =============================================================================
 -- BUFFER NAVIGATION
@@ -78,8 +107,34 @@ map('n', '<C-K>', ':bnext<CR>')
 -- Move to previous buffer
 map('n', '<C-J>', ':bprev<CR>')
 
--- Close current buffer (similar to closing a tab)
-map('n', '<C-Q>', ':bd<CR>')
+-- Smart buffer close - focuses next file window, not Neo-tree
+map('n', '<C-Q>', function()
+  -- Store current buffer to close it later
+  local current_buf = vim.api.nvim_get_current_buf()
+  
+  -- Find all windows with file buffers (not Neo-tree)
+  local windows = vim.api.nvim_list_wins()
+  local file_windows = {}
+  local current_win = vim.api.nvim_get_current_win()
+  
+  for _, win in ipairs(windows) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
+    local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
+    
+    if ft ~= 'neo-tree' and bt == '' and win ~= current_win then
+      table.insert(file_windows, win)
+    end
+  end
+  
+  -- If there are other file windows, focus the first one before closing
+  if #file_windows > 0 then
+    vim.api.nvim_set_current_win(file_windows[1])
+  end
+  
+  -- Now close the original buffer
+  vim.cmd('bd ' .. current_buf)
+end, 'Close buffer and focus next file')
 
 -- =============================================================================
 -- SEARCH AND HIGHLIGHTING
@@ -178,6 +233,63 @@ map('n', '<leader><leader>k', '<Plug>(easymotion-overwin-line)')
 map('n', '<leader><leader>.', '<Plug>(easymotion-repeat)')
 
 -- =============================================================================
+-- LSP AND CODE NAVIGATION
+-- =============================================================================
+-- LSP keybindings are set up automatically in plugins.lua when LSP attaches
+-- Here are the available LSP shortcuts:
+--
+-- gd           - Go to definition
+-- gr           - Show references  
+-- gI           - Go to implementation
+-- gy           - Go to type definition
+-- gD           - Go to declaration
+-- K            - Show hover information
+-- gK           - Show signature help
+-- <leader>ca   - Code actions
+-- <leader>cr   - Rename symbol
+-- <leader>cf   - Format document
+
+-- =============================================================================
+-- DIAGNOSTICS AND TROUBLE
+-- =============================================================================
+-- Diagnostics navigation and trouble panel
+-- These are set up in plugins.lua for Trouble plugin:
+--
+-- <leader>xx   - Toggle Trouble panel
+-- <leader>xw   - Workspace diagnostics
+-- <leader>xd   - Document diagnostics
+-- <leader>xl   - Location list
+-- <leader>xq   - Quickfix list
+-- gR           - LSP references in Trouble
+
+-- =============================================================================
+-- GIT INTEGRATION
+-- =============================================================================
+-- Git navigation and operations (configured in gitsigns)
+-- These are automatically set up for git hunks:
+--
+-- ]c           - Next git hunk
+-- [c           - Previous git hunk
+-- <leader>gs   - Stage hunk
+-- <leader>gr   - Reset hunk
+-- <leader>gS   - Stage buffer
+-- <leader>gR   - Reset buffer
+-- <leader>gp   - Preview hunk
+-- <leader>gb   - Blame line
+-- <leader>gtb  - Toggle line blame
+-- <leader>gd   - Diff this
+-- <leader>gtd  - Toggle deleted lines
+
+-- =============================================================================
+-- SESSION MANAGEMENT
+-- =============================================================================
+-- Session persistence keybindings (configured in persistence.nvim):
+--
+-- <leader>qs   - Restore session
+-- <leader>ql   - Restore last session
+-- <leader>qd   - Don't save current session
+
+-- =============================================================================
 -- USAGE TIPS
 -- =============================================================================
 --[[
@@ -186,6 +298,9 @@ Common workflow examples:
 1. File Navigation:
    - <C-P> to find and open files quickly
    - <C-E> to search for text across files
+   - <leader>e to focus file explorer
+   - <leader>fe to toggle file explorer
+   - In Neo-tree: ←/→ or h/l to collapse/expand folders
    - <C-K>/<C-J> to switch between open files
    - <C-Q> to close current file
 
@@ -199,8 +314,38 @@ Common workflow examples:
    - Use n/N to jump between search results (auto-centered)
    - Use <C-d>/<C-u> for fast scrolling (auto-centered)
 
-4. Editing:
+4. Code Navigation (LSP):
+   - gd to go to definition
+   - gr to see all references
+   - K to see documentation
+   - <leader>ca for code actions
+   - <leader>cr to rename symbols
+   - <leader>cf to format code
+
+5. Git Workflow:
+   - ]c/[c to navigate between changes
+   - <leader>gs to stage hunks
+   - <leader>gp to preview changes
+   - <leader>gb to see git blame
+
+6. Diagnostics:
+   - <leader>xx to see all issues
+   - <leader>xd for current file issues
+   - <leader>xw for workspace issues
+
+7. Editing:
    - Use c to change text without affecting clipboard
    - Use <leader>p to paste over text without losing clipboard
    - Press <esc> to clear search highlighting
+   - Tab/Shift+Tab in completion menu
+   - <C-Space> to trigger completion
+
+8. Claude Integration:
+   - <leader>i to toggle Claude terminal (hide/show, preserves conversation)
+   - <leader>I (shift+i) to completely close Claude session
+   - Escape or <C-\><C-n> to exit terminal insert mode
+
+9. Which-key Help:
+   - Press <leader> and wait to see available commands
+   - Shows context-sensitive help for key combinations
 --]]

@@ -1,26 +1,52 @@
-# Neovim Configuration
+# 🧛‍♂️ Dracula Pro Neovim Configuration
 
-A modern, well-documented Neovim configuration using Lua with the Dracula Pro colorscheme. This configuration is converted from VimScript to Lua for better performance, maintainability, and modern plugin management.
+A modern, feature-rich Neovim configuration powered by **lazy.nvim** with **Dracula Pro** theme integration. This setup transforms Neovim into a full-fledged IDE with LSP support, auto-completion, modern file exploration, and much more.
 
 ## 📸 Screenshots
 
 The configuration uses the **Dracula Pro** colorscheme across all tools:
-- **Neovim**: Dracula Pro with Airline statusline
-- **Kitty Terminal**: Dracula Pro colors
-- **Tmux**: Custom Dracula Pro theme
+- **Neovim**: Dracula Pro with Airline statusline and modern plugins
+- **LSP Integration**: Full language server support with diagnostics
+- **Neo-tree**: Modern file explorer with git integration
+- **Dashboard**: Beautiful startup screen with session management
 
 ## ✨ Features
 
-- **Modern Lua Configuration**: Fast, clean, and maintainable
-- **Lazy Loading**: Plugins load only when needed for faster startup
-- **Dracula Pro Theme**: Consistent colors across all tools
-- **Smart Keybindings**: Intuitive shortcuts for common operations
-- **Developer-Friendly**: Great support for web development (JS, TS, HTML, CSS, Liquid)
-- **Well Documented**: Every setting and plugin explained
+### 🎨 **Theme & UI**
+- **Dracula Pro** colorscheme with custom theme integration
+- Modern **statusline** with vim-airline and powerline fonts
+- **Alpha dashboard** with session management
+- **Which-key** popup for command discovery
+- Custom **Liquid template** syntax highlighting
+
+### 🧠 **LSP & Intelligence**
+- **Language Server Protocol** support via `nvim-lspconfig`
+- **Mason** for automatic LSP server management
+- **Auto-completion** with `nvim-cmp` and multiple sources
+- **Diagnostics** panel with Trouble.nvim
+- **Code actions**, hover info, go-to-definition, and more
+
+### 📁 **File Management**
+- **Neo-tree** modern file explorer with git integration
+- **FZF** fuzzy finding for files and text search
+- **Session persistence** for project restoration
+- **Git integration** with gitsigns and fugitive
+
+### 🔧 **Code Quality**
+- **Formatting** with conform.nvim (Prettier, stylua, etc.)
+- **Linting** with nvim-lint (ESLint, etc.)
+- **Treesitter** syntax highlighting
+- **Auto-formatting** on save
+
+### ⚡ **Performance**
+- **Lazy loading** of all plugins
+- Optimized startup time
+- Efficient buffer management
+- Smart autocommands
 
 ## 📦 Requirements
 
-- **Neovim >= 0.8**: Required for Lua configuration
+- **Neovim >= 0.9.0**: Required for modern Lua features
 - **Git**: For plugin management
 - **Node.js**: For some plugins (Prettier, etc.)
 - **ripgrep**: For fast text searching with FZF
@@ -377,5 +403,254 @@ This configuration is free to use and modify. The Dracula Pro theme has its own 
 **Author**: Efe Kurnaz  
 **Last Updated**: 2024  
 **Neovim Version**: 0.8+  
+
+## 📋 Complete Plugin List
+
+### 🔧 **Core Infrastructure**
+- **lazy.nvim** - Modern plugin manager with lazy loading
+- **plenary.nvim** - Common utilities library  
+- **nui.nvim** - UI components library
+
+### 🎨 **Theme & Appearance**
+- **dracula/vim** - Dracula Pro colorscheme
+- **vim-airline** - Statusline with themes
+- **nvim-colorizer.lua** - Hex color visualization
+- **nvim-web-devicons** - File type icons
+- **alpha-nvim** - Dashboard with ASCII art
+
+### 🧠 **LSP & Completion**
+- **nvim-lspconfig** - LSP client configuration
+- **mason.nvim** - LSP server package manager
+- **mason-lspconfig.nvim** - Bridge between Mason and LSP
+- **nvim-cmp** - Autocompletion engine
+- **LuaSnip** - Snippet engine
+- **friendly-snippets** - Snippet collection
+- **schemastore.nvim** - JSON schemas
+
+### 📁 **File Management**
+- **neo-tree.nvim** - Modern file explorer
+- **fzf.vim** - Fuzzy finder
+- **nvim-window-picker** - Window selection
+
+### 🌊 **Git Integration**
+- **vim-fugitive** - Git commands in Vim
+- **gitsigns.nvim** - Git signs in gutter
+
+### 🔍 **Search & Navigation**
+- **trouble.nvim** - Diagnostics panel
+- **which-key.nvim** - Key binding help
+- **easymotion/vim-easymotion** - Fast navigation
+
+### 🔧 **Code Quality**
+- **conform.nvim** - Modern formatter
+- **nvim-lint** - Linter integration
+- **nvim-treesitter** - Syntax highlighting
+
+### 🛠️ **Editing Enhancement**
+- **vim-surround** - Surround text objects
+- **vim-commentary** - Comment/uncomment
+- **vim-visual-multi** - Multiple cursors
+- **auto-pairs** - Auto-close brackets
+- **supermaven-nvim** - AI code completion
+
+### 💾 **Session & Persistence**
+- **persistence.nvim** - Session management
+
+## ⌨️ Key Mappings
+
+> **Leader Key**: `<Space>` (Spacebar)
+
+### 🗂️ **File Operations**
+| Key | Action | Description |
+|-----|--------|-------------|
+| `<Space>` | `:` | Enter command mode |
+| `<C-P>` | `:Files` | Find files |
+| `<C-E>` | `:Rg` | Search text in files |
+| `<C-[>` | `:GFiles?` | Git files with status |
+| `<leader>e` | Neo-tree focus | Focus file explorer |
+| `<leader>fe` | Neo-tree toggle | Toggle file explorer |
+| `<leader>fE` | Neo-tree float | Floating file explorer |
+
+### 🔄 **Buffer Management**
+| Key | Action | Description |
+|-----|--------|-------------|
+| `<C-K>` | `:bnext` | Next buffer |
+| `<C-J>` | `:bprev` | Previous buffer |
+| `<C-Q>` | `:bd` | Close buffer |
+
+### 🧠 **LSP Operations**
+| Key | Action | Description |
+|-----|--------|-------------|
+| `gd` | Go to definition | Jump to symbol definition |
+| `gr` | Show references | List all references |
+| `gI` | Go to implementation | Jump to implementation |
+| `gy` | Go to type definition | Jump to type definition |
+| `K` | Hover info | Show documentation |
+| `<leader>ca` | Code actions | Show available actions |
+| `<leader>cr` | Rename | Rename symbol |
+| `<leader>cf` | Format | Format document |
+
+### 🔍 **Diagnostics**
+| Key | Action | Description |
+|-----|--------|-------------|
+| `<leader>xx` | Toggle Trouble | Show/hide diagnostics panel |
+| `<leader>xw` | Workspace diagnostics | Show workspace issues |
+| `<leader>xd` | Document diagnostics | Show current file issues |
+| `<leader>xl` | Location list | Show location list |
+| `<leader>xq` | Quickfix | Show quickfix list |
+
+### 🌊 **Git Operations**
+| Key | Action | Description |
+|-----|--------|-------------|
+| `]c` | Next hunk | Next git change |
+| `[c` | Previous hunk | Previous git change |
+| `<leader>gs` | Stage hunk | Stage git hunk |
+| `<leader>gr` | Reset hunk | Reset git hunk |
+| `<leader>gp` | Preview hunk | Preview git change |
+| `<leader>gb` | Blame line | Show git blame |
+| `<leader>gd` | Diff this | Show git diff |
+
+### 💾 **Session Management**
+| Key | Action | Description |
+|-----|--------|-------------|
+| `<leader>qs` | Restore session | Restore saved session |
+| `<leader>ql` | Last session | Restore last session |
+| `<leader>qd` | Don't save | Skip session saving |
+
+### 🤖 **Claude Integration**
+| Key | Action | Description |
+|-----|--------|-------------|
+| `<leader>i` | Toggle Claude | Hide/show Claude terminal (preserves conversation) |
+| `<leader>I` | Close Claude | Completely end Claude session |
+| `<Esc>` (in terminal) | Exit insert | Exit terminal insert mode |
+
+### 🗂️ **Neo-tree Navigation** (within file explorer)
+| Key | Action | Description |
+|-----|--------|-------------|
+| `←` / `h` | Collapse folder | Close/collapse current folder |
+| `→` / `l` | Expand folder | Open/expand current folder |
+| `<Space>` | Toggle node | Expand/collapse folder |
+| `<Enter>` | Open file | Open selected file |
+| `q` | Close Neo-tree | Close the file explorer |
+
+## 🎨 Theme Customization
+
+This configuration includes extensive **Dracula Pro** theme integration:
+
+### Color Palette
+- **Background**: `#282a36`
+- **Foreground**: `#f8f8f2`
+- **Pink**: `#ff79c6`
+- **Purple**: `#bd93f9`
+- **Cyan**: `#8be9fd`
+- **Green**: `#50fa7b`
+- **Orange**: `#ffb86c`
+- **Red**: `#ff5555`
+- **Yellow**: `#f1fa8c`
+
+### Custom Highlights
+The configuration includes custom highlighting for:
+- **LSP diagnostics** with appropriate colors
+- **Completion menus** with Dracula Pro styling
+- **Git signs** in the gutter
+- **Neo-tree** file explorer
+- **Liquid templates** with HTML tag highlighting
+- **JSON files** with proper syntax coloring
+
+## 🚀 Language Support
+
+### Automatic LSP Setup
+The following language servers are automatically installed:
+
+- **TypeScript/JavaScript** - `ts_ls`
+- **HTML** - `html`
+- **CSS** - `cssls`
+- **JSON** - `jsonls`
+- **Lua** - `lua_ls`
+- **Bash** - `bashls`
+
+### Formatters & Linters
+Automatically configured:
+
+- **Prettier** - JS/TS/CSS/HTML/JSON
+- **ESLint** - JavaScript/TypeScript linting
+- **stylua** - Lua formatting
+- **shfmt** - Shell script formatting
+
+## 🔄 Updating
+
+### Update Plugins
+```bash
+:Lazy sync
+```
+
+### Update LSP Servers
+```bash
+:Mason
+```
+
+### Update Configuration
+```bash
+cd ~/.config/nvim
+git pull
+:Lazy sync
+```
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+#### LSP Not Working
+1. Check if Mason installed servers: `:Mason`
+2. Verify LSP status: `:LspInfo`
+3. Restart LSP: `:LspRestart`
+
+#### Plugins Not Loading
+1. Update lazy.nvim: `:Lazy update`
+2. Clear plugin cache: `:Lazy clear`
+3. Reinstall: `:Lazy install`
+
+#### Theme Issues
+1. Ensure true color support: `:set termguicolors?`
+2. Check terminal color support
+3. Restart Neovim after theme changes
+
+#### File Explorer Issues
+1. Check Neo-tree status: `:Neotree show`
+2. Toggle with: `<leader>fe`
+3. Reset: `:Neotree close` then `:Neotree show`
+
+### Useful Commands
+
+```bash
+:checkhealth          # Check Neovim health
+:Lazy                 # Open plugin manager
+:Mason                # Open LSP server manager
+:LspInfo              # Show LSP information
+:ConformInfo          # Show formatter info
+:TroubleToggle        # Toggle diagnostics
+```
+
+## 🎯 Performance Tips
+
+1. **Lazy Loading**: Most plugins are lazy-loaded for faster startup
+2. **LSP Optimization**: Only runs when needed for specific file types
+3. **Treesitter**: Incremental parsing for better performance
+4. **Session Management**: Restore projects quickly
+
+## 🤝 Contributing
+
+Feel free to submit issues, fork the repository, and create pull requests for any improvements.
+
+## 📝 License
+
+This configuration is open source and available under the [MIT License](LICENSE).
+
+---
+
+### 🧛‍♂️ Dracula Pro Edition
+*Beautiful darkness awaits...*
+
+> **Note**: This configuration is optimized for development workflows and includes everything you need for modern coding. The Dracula Pro theme integration ensures a consistent, beautiful experience across all plugins and features.
 
 For questions or issues, please refer to the troubleshooting section or check the plugin documentation.
