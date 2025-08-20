@@ -48,7 +48,7 @@ require("lazy").setup({
   -- ==========================================================================
 
   -- Git commands within Vim (:Git status, :Git commit, etc.)
-  { "tpope/vim-fugitive", event = "VeryLazy" },
+  { "tpope/vim-fugitive", event = "BufRead" },
 
   -- ==========================================================================
   -- COLORSCHEME AND APPEARANCE
@@ -65,7 +65,46 @@ require("lazy").setup({
   },
 
   -- show colors inline for CSS hex codes (#ff0000 shows as red background)
-  { "ap/vim-css-color", ft = { "css", "scss", "sass", "html", "javascript", "typescript", "json", "lua" } },
+  {
+    "NvChad/nvim-colorizer.lua",
+    ft = { "css", "scss", "sass", "html", "javascript", "typescript", "json", "lua", "conf", "sh", "vim" },
+    config = function()
+      require("colorizer").setup({
+        filetypes = {
+          "css",
+          "scss", 
+          "sass",
+          "html",
+          "javascript",
+          "typescript", 
+          "json",
+          "lua",
+          "yaml",
+          "toml",
+          "conf",
+          "markdown",
+          "sh",
+          "fish",
+          "vim"
+        },
+        user_default_options = {
+          RGB = true, -- #RGB hex codes
+          RRGGBB = true, -- #RRGGBB hex codes
+          names = true, -- "Name" codes like Blue or red
+          RRGGBBAA = false, -- #RRGGBBAA hex codes
+          AARRGGBB = false, -- 0xAARRGGBB hex codes
+          rgb_fn = false, -- CSS rgb() and rgba() functions
+          hsl_fn = false, -- CSS hsl() and hsla() functions
+          css = false, -- Enable all CSS features: rgb_fn, hsl_fn, names, RGB, RRGGBB
+          css_fn = false, -- Enable all CSS *functions*: rgb_fn, hsl_fn
+          mode = "background", -- Set the display mode.
+          tailwind = false,
+          sass = { enable = false },
+          virtualtext = "■",
+        },
+      })
+    end,
+  },
 
   -- ==========================================================================
   -- STATUSLINE AND UI
@@ -200,7 +239,7 @@ require("lazy").setup({
         -- Additional parser configurations
         liquid = {
           install_info = {
-            url = "https://github.com/Shopify/tree-sitter-liquid",
+            url = "https://github.com/hankthetank27/tree-sitter-liquid",
             files = { "src/parser.c" },
             branch = "main",
           },
@@ -237,8 +276,6 @@ require("lazy").setup({
   -- LANGUAGE-SPECIFIC SYNTAX HIGHLIGHTING
   -- ==========================================================================
 
-  -- Show colors inline for CSS hex codes (#ff0000 shows as red background)
-  { "ap/vim-css-color", ft = { "css", "scss", "sass", "html" } },
 
   -- Shopify Liquid templating language
   { 

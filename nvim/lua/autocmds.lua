@@ -98,8 +98,8 @@ autocmd('FileType', {
       -- HTML attributes in cyan
       vim.cmd('hi @attribute.liquid guifg=#80FFEA')
       
-      -- HTML strings in yellow
-      vim.cmd('hi @string.liquid guifg=#FFFF80')
+      -- HTML strings in yellow - preserve vim-css-color backgrounds
+      vim.cmd('hi @string.liquid guifg=#FFFF80 guibg=NONE')
       
       -- Liquid syntax in purple
       vim.cmd('hi @variable.liquid guifg=#9580FF')
@@ -370,6 +370,20 @@ autocmd('FileType', {
   end,
 })
 
+-- VIM-CSS-COLOR FIX
+-- Ensure vim-css-color works after colorscheme loads
+autocmd('ColorScheme', {
+  callback = function()
+    vim.defer_fn(function()
+      -- Force reload vim-css-color highlighting
+      if vim.fn.exists(':call') == 2 then
+        vim.cmd('silent! call css_color#reload()')
+      end
+    end, 100)
+  end,
+  desc = 'Reload vim-css-color after colorscheme changes'
+})
+
 -- JSON SYNTAX HIGHLIGHTING FIX
 -- Fix JSON colors to use proper Dracula Pro colors
 autocmd('FileType', {
@@ -378,15 +392,15 @@ autocmd('FileType', {
     -- Wait a moment for colorscheme to load, then apply JSON colors
     vim.defer_fn(function()
       -- Use the correct treesitter highlight groups for JSON
-      -- Keys/properties in cyan (light blue as requested)
-      vim.cmd('hi @property.json guifg=#80FFEA')
-      vim.cmd('hi @string.special.key.json guifg=#80FFEA')
+      -- Keys/properties in cyan (light blue as requested) - preserve vim-css-color backgrounds
+      vim.cmd('hi @property.json guifg=#80FFEA guibg=NONE')
+      vim.cmd('hi @string.special.key.json guifg=#80FFEA guibg=NONE')
 
-      -- Strings in yello
-      vim.cmd('hi @string.json guifg=#FFFF80')
+      -- Strings in yellow - preserve vim-css-color backgrounds
+      vim.cmd('hi @string.json guifg=#FFFF80 guibg=NONE')
 
-      -- Numbers in purple
-      vim.cmd('hi @number.json guifg=#9580FF')
+      -- Numbers in purple - preserve vim-css-color backgrounds
+      vim.cmd('hi @number.json guifg=#9580FF guibg=NONE')
 
       -- Booleans and null in purple
       vim.cmd('hi @boolean.json guifg=#9580FF')
@@ -397,9 +411,9 @@ autocmd('FileType', {
       vim.cmd('hi @punctuation.delimiter.json guifg=#FF79C6')
 
       -- Fallback to standard JSON highlight groups if treesitter groups don't work
-      vim.cmd('hi jsonKeyword guifg=#80FFEA')
-      vim.cmd('hi jsonString guifg=#FFFF80')
-      vim.cmd('hi jsonNumber guifg=#9580FF')
+      vim.cmd('hi jsonKeyword guifg=#80FFEA guibg=NONE')
+      vim.cmd('hi jsonString guifg=#FFFF80 guibg=NONE')
+      vim.cmd('hi jsonNumber guifg=#9580FF guibg=NONE')
       vim.cmd('hi jsonBoolean guifg=#9580FF')
       vim.cmd('hi jsonNull guifg=#9580FF')
       vim.cmd('hi jsonBraces guifg=#FFB86C')
