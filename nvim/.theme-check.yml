@@ -1,0 +1,70 @@
+# Theme Check Configuration
+# Enables strict type checking and doc validation
+
+# Enable all checks
+extends: :all
+
+# Enable strict mode for better type checking
+strict: true
+
+# Enable documentation validation
+ValidateDocumentation:
+  enabled: true
+  severity: error
+
+# Enable parameter type checking
+ParameterTypeCheck:
+  enabled: true
+  severity: error
+
+# Check for required parameters
+RequiredParameters:
+  enabled: true
+  severity: error
+
+# Validate render tag parameters
+RenderTagParameters:
+  enabled: true
+  strict_types: true
+  validate_docs: true
+  severity: error
+
+# Check for undefined objects
+UndefinedObject:
+  enabled: true
+  severity: error
+
+# Enable liquid tag validation
+LiquidTag:
+  enabled: true
+  severity: error
+
+# Check for missing templates
+MissingTemplate:
+  enabled: true
+  severity: error
+
+# Enable all experimental features
+experimental:
+  type_checking: true
+  doc_validation: true
+  parameter_validation: true
+
+# Custom ignore patterns (if needed)
+ignore:
+  - node_modules/
+  - dist/
+  - build/
+
+# Root directory for theme files
+root: .
+
+# Include paths for checking
+include_paths:
+  - snippets/
+  - sections/
+  - templates/
+  - layout/
+  - assets/
+  - config/
+  - locales/

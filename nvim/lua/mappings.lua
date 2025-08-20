@@ -112,37 +112,78 @@ map('n', '<C-Q>', function()
   local current_win = vim.api.nvim_get_current_win()
   local current_buf = vim.api.nvim_get_current_buf()
   
-  -- Get all windows
-  local windows = vim.api.nvim_list_wins()
-  local file_wins = {}
-  local neotree_win = nil
+  -- Get list of all listed buffers
+  local buffers = vim.fn.getbufinfo({buflisted = 1})
+  local valid_buffers = {}
   
-  for _, win in ipairs(windows) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
-    local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
-    
-    if ft == 'neo-tree' then
-      neotree_win = win
-    elseif bt == '' and win ~= current_win then
-      table.insert(file_wins, win)
+  -- Find other valid file buffers
+  for _, buf_info in ipairs(buffers) do
+    if buf_info.bufnr ~= current_buf then
+      local ft = vim.api.nvim_buf_get_option(buf_info.bufnr, 'filetype')
+      if ft ~= 'neo-tree' and ft ~= 'help' and ft ~= 'qf' then
+        table.insert(valid_buffers, buf_info.bufnr)
+      end
     end
   end
   
-  -- Switch to another file window FIRST if available
-  if #file_wins > 0 then
-    vim.api.nvim_set_current_win(file_wins[1])
-    vim.cmd('bdelete ' .. current_buf)
+  -- If we have other buffers, switch to one before closing
+  if #valid_buffers > 0 then
+    -- Try to switch to the next or previous buffer
+    vim.cmd('silent! bnext')
+    
+    -- Check if we're still on the same buffer (might be the last one)
+    if vim.api.nvim_get_current_buf() == current_buf then
+      vim.cmd('silent! bprevious')
+    end
+    
+    -- If we're STILL on the same buffer, switch to the first valid one
+    if vim.api.nvim_get_current_buf() == current_buf and #valid_buffers > 0 then
+      vim.api.nvim_win_set_buf(current_win, valid_buffers[1])
+    end
   else
-    -- No other file windows, just close normally
-    vim.cmd('bdelete')
+    -- No other buffers, create a new empty one
+    vim.cmd('enew')
   end
   
-  -- Ensure Neo-tree stays at correct width
-  if neotree_win then
-    vim.api.nvim_win_set_width(neotree_win, 40)
-  end
+  -- Now delete the original buffer
+  vim.cmd('silent! bdelete! ' .. current_buf)
+  
+  -- Post-delete: ensure we're not in Neo-tree
+  vim.defer_fn(function()
+    local win = vim.api.nvim_get_current_win()
+    local buf = vim.api.nvim_win_get_buf(win)
+    local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
+    
+    if ft == 'neo-tree' then
+      -- Find any non-Neo-tree window
+      for _, w in ipairs(vim.api.nvim_list_wins()) do
+        local b = vim.api.nvim_win_get_buf(w)
+        local f = vim.api.nvim_buf_get_option(b, 'filetype')
+        local bt = vim.api.nvim_buf_get_option(b, 'buftype')
+        if f ~= 'neo-tree' and bt == '' then
+          vim.api.nvim_set_current_win(w)
+          break
+        end
+      end
+    end
+    
+    -- Fix Neo-tree width
+    for _, w in ipairs(vim.api.nvim_list_wins()) do
+      local b = vim.api.nvim_win_get_buf(w)
+      local f = vim.api.nvim_buf_get_option(b, 'filetype')
+      if f == 'neo-tree' then
+        pcall(vim.api.nvim_win_set_width, w, 40)
+        break
+      end
+    end
+  end, 10)
 end, { desc = 'Close buffer and focus next file' })
+
+-- Additional buffer management
+map('n', '<leader>bd', '<C-Q>', { desc = 'Delete buffer (smart)' })
+map('n', '<leader>bn', ':bnext<CR>', { desc = 'Next buffer' })
+map('n', '<leader>bp', ':bprevious<CR>', { desc = 'Previous buffer' })
+map('n', '<leader>bb', ':buffers<CR>', { desc = 'List buffers' })
 
 -- =============================================================================
 -- SEARCH AND HIGHLIGHTING

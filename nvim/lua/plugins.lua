@@ -589,9 +589,18 @@ require("lazy").setup({
     branch = "v3.x",
     cmd = "Neotree",
     keys = {
-      { "<leader>fe", "<cmd>Neotree toggle<cr>", desc = "Explorer NeoTree (root dir)" },
-      { "<leader>fE", "<cmd>Neotree toggle float<cr>", desc = "Explorer NeoTree (float)" },
-      { "<leader>e", "<cmd>Neotree focus<cr>", desc = "Explorer NeoTree (focus)" },
+      { "<leader>fe", function() 
+          vim.g.neo_tree_intentional_focus = true
+          vim.cmd("Neotree toggle")
+        end, desc = "Explorer NeoTree (root dir)" },
+      { "<leader>fE", function()
+          vim.g.neo_tree_intentional_focus = true
+          vim.cmd("Neotree toggle float")
+        end, desc = "Explorer NeoTree (float)" },
+      { "<leader>e", function()
+          vim.g.neo_tree_intentional_focus = true
+          vim.cmd("Neotree focus")
+        end, desc = "Explorer NeoTree (focus)" },
     },
     deactivate = function()
       vim.cmd([[Neotree close]])
@@ -621,6 +630,34 @@ require("lazy").setup({
         retain_hidden_root_indent = false,
         resize_timer_interval = 500, -- Delay between window resizes
         auto_clean_after_session_restore = true,
+        event_handlers = {
+          -- Prevent Neo-tree from stealing focus when closing buffers
+          {
+            event = "neo_tree_buffer_enter",
+            handler = function()
+              -- If we have other windows with files, don't let Neo-tree keep focus
+              vim.defer_fn(function()
+                local wins = vim.api.nvim_list_wins()
+                for _, win in ipairs(wins) do
+                  local buf = vim.api.nvim_win_get_buf(win)
+                  local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
+                  local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
+                  -- If there's a regular file window, switch to it
+                  if ft ~= 'neo-tree' and bt == '' then
+                    -- Only switch if Neo-tree has focus and we weren't intentionally focusing it
+                    local current_ft = vim.bo.filetype
+                    if current_ft == 'neo-tree' and not vim.g.neo_tree_intentional_focus then
+                      vim.api.nvim_set_current_win(win)
+                      break
+                    end
+                  end
+                end
+                -- Reset the flag
+                vim.g.neo_tree_intentional_focus = false
+              end, 1)
+            end
+          },
+        },
         default_component_configs = {
           container = {
             enable_character_fade = true

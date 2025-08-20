@@ -37,9 +37,18 @@ function M.setup()
             checkOnChange = true,
             checkOnSave = true,
             preloadOnBoot = true,
+            -- Enable stricter type checking
+            typeCheck = true,
+            docValidation = true,
           },
           liquidFiles = {
             formatOnSave = true,
+            enableDocumentationComments = true,
+          },
+          -- Enable experimental features for better type checking
+          experimental = {
+            typeChecking = true,
+            parameterValidation = true,
           },
         },
         init_options = {

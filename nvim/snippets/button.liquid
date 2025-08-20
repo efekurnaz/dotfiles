@@ -1,0 +1,44 @@
+{% doc %}
+  Button Component
+  
+  A reusable button component with various styles and sizes.
+  
+  @param {string} text - The button text to display
+  @param {string} url - The URL to link to
+  @param {string} style - Button style: 'primary', 'secondary', 'outline' (default: 'primary')
+  @param {string} size - Button size: 'small', 'medium', 'large' (default: 'medium')
+  @param {boolean} disabled - Whether the button is disabled (default: false)
+  @param {boolean} full_width - Whether button should be full width (default: false)
+  @param {string} icon - Optional icon name to display
+  @param {number} tabindex - Tab index for accessibility (default: 0)
+  
+  @example
+  {% render 'button',
+    text: 'Add to Cart',
+    url: product.url,
+    style: 'primary',
+    size: 'large',
+    disabled: false
+  %}
+{% enddoc %}
+
+{% liquid
+  # Set default values
+  assign style = style | default: 'primary'
+  assign size = size | default: 'medium'
+  assign disabled = disabled | default: false
+  assign full_width = full_width | default: false
+  assign tabindex = tabindex | default: 0
+%}
+
+<a 
+  href="{{ url }}"
+  class="btn btn--{{ style }} btn--{{ size }}{% if full_width %} btn--full-width{% endif %}{% if disabled %} btn--disabled{% endif %}"
+  {% if disabled %}aria-disabled="true" tabindex="-1"{% else %}tabindex="{{ tabindex }}"{% endif %}
+  {% if disabled %}onclick="return false;"{% endif %}
+>
+  {% if icon %}
+    <span class="btn__icon">{% render 'icon', name: icon %}</span>
+  {% endif %}
+  <span class="btn__text">{{ text }}</span>
+</a>

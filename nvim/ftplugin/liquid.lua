@@ -40,6 +40,7 @@ vim.b.match_words = table.concat({
   '{% tablerow %}:{% endtablerow %}',
   '{% paginate %}:{% endpaginate %}',
   '{% form %}:{% endform %}',
+  '{% doc %}:{% enddoc %}',  -- Liquid documentation blocks
   '<:>',  -- HTML tags
 }, ',')
 
@@ -135,6 +136,7 @@ local liquid_abbrevs = {
   ['limg'] = "{{ image <Bar> img_url: 'master' <Bar> img_tag }}",
   ['lasset'] = "{{ 'asset.css' <Bar> asset_url <Bar> stylesheet_tag }}",
   ['lscript'] = "{{ 'script.js' <Bar> asset_url <Bar> script_tag }}",
+  ['ldoc'] = '{% doc %} @param {type} name - description {% enddoc %}',
 }
 
 -- Register abbreviations
@@ -216,6 +218,10 @@ function _G.wrap_in_liquid_tag(tag_type)
   elseif tag_type == 'raw' then
     table.insert(lines, 1, '{% raw %}')
     table.insert(lines, '{% endraw %}')
+  elseif tag_type == 'doc' then
+    table.insert(lines, 1, '{% doc %}')
+    table.insert(lines, '  @param {type} name - description')
+    table.insert(lines, '{% enddoc %}')
   end
   
   vim.api.nvim_buf_set_lines(0, start_line - 1, end_line, false, lines)
@@ -227,6 +233,7 @@ vim.keymap.set('v', '<leader>lf', ':lua wrap_in_liquid_tag("for")<CR>', { buffer
 vim.keymap.set('v', '<leader>lc', ':lua wrap_in_liquid_tag("comment")<CR>', { buffer = true, desc = 'Wrap in comment block' })
 vim.keymap.set('v', '<leader>lr', ':lua wrap_in_liquid_tag("raw")<CR>', { buffer = true, desc = 'Wrap in raw block' })
 vim.keymap.set('v', '<leader>lp', ':lua wrap_in_liquid_tag("capture")<CR>', { buffer = true, desc = 'Wrap in capture block' })
+vim.keymap.set('v', '<leader>ld', ':lua wrap_in_liquid_tag("doc")<CR>', { buffer = true, desc = 'Wrap in doc block' })
 
 -- =============================================================================
 -- STATUS LINE INDICATOR
@@ -234,4 +241,9 @@ vim.keymap.set('v', '<leader>lp', ':lua wrap_in_liquid_tag("capture")<CR>', { bu
 -- Add Liquid indicator to status line when in Liquid files
 vim.b.airline_section_y = 'Liquid'
 
-print("Liquid support loaded - LSP, formatting, and Theme Check commands available")
+-- Silent notification that Liquid support is loaded (only show once per session)
+if not _G.liquid_loaded_notified then
+  _G.liquid_loaded_notified = true
+  -- Optionally show a brief notification (commented out to avoid spam)
+  -- vim.notify("Liquid LSP ready", vim.log.levels.INFO, { title = "Liquid", timeout = 1000 })
+end

@@ -271,34 +271,76 @@ vim.api.nvim_create_user_command('CheckTime', 'checktime', {
 -- Create custom quit command that handles window focus properly
 vim.api.nvim_create_user_command('Q', function(opts)
   local current_win = vim.api.nvim_get_current_win()
+  local current_buf = vim.api.nvim_win_get_buf(current_win)
+  local current_ft = vim.api.nvim_buf_get_option(current_buf, 'filetype')
+  
+  -- If we're closing Neo-tree itself, just close it normally
+  if current_ft == 'neo-tree' then
+    vim.api.nvim_win_close(current_win, opts.bang)
+    return
+  end
+  
+  -- Store the current window to close it later
+  local win_to_close = current_win
+  
+  -- Get all windows and categorize them
   local windows = vim.api.nvim_list_wins()
   local file_wins = {}
   local neotree_win = nil
   
   for _, win in ipairs(windows) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
-    local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
-    
-    if ft == 'neo-tree' then
-      neotree_win = win
-    elseif bt == '' and win ~= current_win then
-      table.insert(file_wins, win)
+    if win ~= current_win then
+      local buf = vim.api.nvim_win_get_buf(win)
+      local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
+      local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
+      
+      if ft == 'neo-tree' then
+        neotree_win = win
+      elseif bt == '' then  -- Regular file buffer
+        table.insert(file_wins, win)
+      end
     end
   end
   
-  -- If there are other file windows, switch to one first
+  -- If there are other file windows, switch to the most recent one
   if #file_wins > 0 then
+    -- Try to find the window that was accessed most recently
+    -- For now, just use the first one that's not Neo-tree
     vim.api.nvim_set_current_win(file_wins[1])
+  elseif #windows == 2 and neotree_win then
+    -- Only Neo-tree and current window left, close both
+    vim.cmd('qa' .. (opts.bang and '!' or ''))
+    return
   end
   
   -- Now close the original window
-  vim.api.nvim_win_close(current_win, opts.bang)
+  pcall(vim.api.nvim_win_close, win_to_close, opts.bang)
   
-  -- Fix Neo-tree width
-  if neotree_win then
-    vim.api.nvim_win_set_width(neotree_win, 40)
-  end
+  -- Ensure Neo-tree doesn't steal focus
+  vim.defer_fn(function()
+    local cur_win = vim.api.nvim_get_current_win()
+    local cur_buf = vim.api.nvim_win_get_buf(cur_win)
+    local cur_ft = vim.api.nvim_buf_get_option(cur_buf, 'filetype')
+    
+    -- If we ended up in Neo-tree, try to switch away
+    if cur_ft == 'neo-tree' then
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        local buf = vim.api.nvim_win_get_buf(win)
+        local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
+        local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
+        
+        if ft ~= 'neo-tree' and bt == '' then
+          vim.api.nvim_set_current_win(win)
+          break
+        end
+      end
+    end
+    
+    -- Fix Neo-tree width
+    if neotree_win and vim.api.nvim_win_is_valid(neotree_win) then
+      pcall(vim.api.nvim_win_set_width, neotree_win, 40)
+    end
+  end, 10)
 end, { bang = true, desc = 'Smart quit that focuses file windows' })
 
 -- Abbreviate :q to use our custom :Q command

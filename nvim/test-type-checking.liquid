@@ -1,0 +1,97 @@
+{% comment %}
+  Test file to demonstrate type checking with {% doc %} tags
+  The language server should validate parameter types
+{% endcomment %}
+
+<div class="container">
+  <h1>Type Checking Examples</h1>
+  
+  {% comment %} CORRECT USAGE - All types match {% endcomment %}
+  <div class="correct-examples">
+    <h2>✅ Correct Type Usage</h2>
+    
+    {% render 'button',
+      text: 'Click Me',
+      url: '/products',
+      style: 'primary',
+      size: 'large',
+      disabled: false,
+      full_width: true,
+      tabindex: 1
+    %}
+    
+    {% comment %} Using variables with correct types {% endcomment %}
+    {% assign button_disabled = false %}
+    {% assign button_tab = 2 %}
+    
+    {% render 'button',
+      text: product.title,
+      url: product.url,
+      disabled: button_disabled,
+      tabindex: button_tab
+    %}
+  </div>
+  
+  {% comment %} INCORRECT USAGE - Type mismatches that should show errors {% endcomment %}
+  <div class="incorrect-examples">
+    <h2>❌ Incorrect Type Usage - Should Show Errors</h2>
+    
+    {% comment %} 
+      These should trigger type errors:
+      - disabled expects boolean, got string
+      - tabindex expects number, got string
+      - size expects specific string values, got invalid value
+    {% endcomment %}
+    
+    {% render 'button',
+      text: 'Bad Types Example',
+      url: '/test',
+      disabled: 'yes',              <!-- ERROR: Expected boolean, got string -->
+      tabindex: 'first',             <!-- ERROR: Expected number, got string -->
+      size: 'extra-large'            <!-- ERROR: Invalid enum value -->
+    %}
+    
+    {% comment %} Passing number where string expected {% endcomment %}
+    {% render 'button',
+      text: 123,                     <!-- ERROR: Expected string, got number -->
+      url: true,                     <!-- ERROR: Expected string, got boolean -->
+      style: false                   <!-- ERROR: Expected string, got boolean -->
+    %}
+    
+    {% comment %} Missing required parameters {% endcomment %}
+    {% render 'button',
+      style: 'primary'               <!-- ERROR: Missing required 'text' and 'url' -->
+    %}
+  </div>
+  
+  {% comment %} Test with liquid variables {% endcomment %}
+  <div class="variable-examples">
+    <h2>Variable Type Checking</h2>
+    
+    {% assign wrong_type_disabled = 'false' %}
+    {% assign correct_disabled = false %}
+    
+    {% comment %} This should error - string instead of boolean {% endcomment %}
+    {% render 'button',
+      text: 'Test',
+      url: '/test',
+      disabled: wrong_type_disabled   <!-- ERROR: Type mismatch -->
+    %}
+    
+    {% comment %} This should work - correct boolean type {% endcomment %}
+    {% render 'button',
+      text: 'Test',
+      url: '/test',
+      disabled: correct_disabled      <!-- OK: Correct type -->
+    %}
+  </div>
+</div>
+
+{% comment %}
+  To test:
+  1. Open this file in Neovim
+  2. The LSP should highlight type errors with red underlines
+  3. Hover over the errors (K) to see type mismatch messages
+  4. :LspInfo should show theme_check is running
+  5. Look for diagnostics in the gutter
+{% endcomment %}

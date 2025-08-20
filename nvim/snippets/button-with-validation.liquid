@@ -1,0 +1,56 @@
+{% doc %}
+  Button Component with Runtime Type Validation
+  
+  @param {string} text - Button text (required)
+  @param {string} url - Button URL (required)
+  @param {boolean} disabled - Whether button is disabled
+  @param {number} tabindex - Tab index for accessibility
+{% enddoc %}
+
+{% comment %} Runtime type validation {% endcomment %}
+{% liquid
+  # Validate required parameters
+  unless text
+    echo '<!-- ERROR: button requires "text" parameter -->'
+    assign validation_error = true
+  endunless
+  
+  unless url
+    echo '<!-- ERROR: button requires "url" parameter -->'
+    assign validation_error = true
+  endunless
+  
+  # Type checking with workarounds
+  if disabled != false and disabled != true and disabled != nil
+    echo '<!-- WARNING: "disabled" should be boolean -->'
+  endif
+  
+  # Set defaults with type coercion
+  if disabled == 'true' or disabled == '1' or disabled == 1
+    assign disabled = true
+  elsif disabled == 'false' or disabled == '0' or disabled == 0
+    assign disabled = false
+  else
+    assign disabled = disabled | default: false
+  endif
+  
+  # Validate tabindex is numeric
+  assign tabindex_test = tabindex | plus: 0
+  if tabindex and tabindex_test == 0 and tabindex != '0' and tabindex != 0
+    echo '<!-- WARNING: "tabindex" should be numeric -->'
+    assign tabindex = 0
+  else
+    assign tabindex = tabindex | default: 0
+  endif
+%}
+
+{% unless validation_error %}
+  <a 
+    href="{{ url }}"
+    class="btn{% if disabled %} btn--disabled{% endif %}"
+    {% if disabled %}disabled aria-disabled="true"{% endif %}
+    tabindex="{{ tabindex }}"
+  >
+    {{ text }}
+  </a>
+{% endunless %}

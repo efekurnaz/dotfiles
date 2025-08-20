@@ -1,0 +1,140 @@
+{% comment %}
+  Example of using the {% doc %} tag for documenting Liquid components
+  This is especially useful for render tags and snippets
+{% endcomment %}
+
+{% doc %}
+  Product Card Component
+  
+  Displays a product card with image, title, price, and add to cart button.
+  
+  @param {product} product - The product object to display
+  @param {boolean} show_vendor - Whether to show the vendor name (default: false)
+  @param {string} image_size - Size of the product image (default: 'medium')
+  @param {boolean} show_quick_add - Whether to show quick add button (default: true)
+  @param {string} button_text - Custom text for the add to cart button
+  
+  @example
+  {% render 'product-card', 
+    product: product, 
+    show_vendor: true, 
+    image_size: 'large' 
+  %}
+{% enddoc %}
+
+<div class="product-card" data-product-id="{{ product.id }}">
+  {% if product.featured_image %}
+    <div class="product-card__image">
+      {{ product.featured_image | img_url: image_size | img_tag: product.title }}
+    </div>
+  {% endif %}
+  
+  <div class="product-card__content">
+    {% if show_vendor %}
+      <p class="product-card__vendor">{{ product.vendor }}</p>
+    {% endif %}
+    
+    <h3 class="product-card__title">
+      <a href="{{ product.url }}">{{ product.title }}</a>
+    </h3>
+    
+    <div class="product-card__price">
+      {% if product.compare_at_price > product.price %}
+        <span class="price--sale">{{ product.price | money }}</span>
+        <s class="price--compare">{{ product.compare_at_price | money }}</s>
+      {% else %}
+        <span class="price">{{ product.price | money }}</span>
+      {% endif %}
+    </div>
+    
+    {% if show_quick_add %}
+      {% unless product.available %}
+        <button class="product-card__button" disabled>
+          {{ 'products.product.sold_out' | t }}
+        </button>
+      {% else %}
+        <form action="/cart/add" method="post">
+          <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+          <button type="submit" class="product-card__button">
+            {{ button_text | default: 'products.product.add_to_cart' | t }}
+          </button>
+        </form>
+      {% endunless %}
+    {% endif %}
+  </div>
+</div>
+
+{% comment %}
+  Another example with a section snippet
+{% endcomment %}
+
+{% doc %}
+  Hero Banner Section
+  
+  A full-width hero banner with background image and overlay text.
+  
+  @param {image} background_image - Background image for the hero
+  @param {string} heading - Main heading text
+  @param {string} subheading - Subheading text
+  @param {string} button_text - CTA button text
+  @param {string} button_link - CTA button link
+  @param {string} text_alignment - Text alignment: 'left', 'center', 'right' (default: 'center')
+  @param {number} overlay_opacity - Overlay opacity from 0-100 (default: 30)
+  
+  @example
+  {% render 'hero-banner',
+    background_image: section.settings.image,
+    heading: section.settings.heading,
+    button_text: section.settings.button_text,
+    button_link: section.settings.button_link,
+    overlay_opacity: 50
+  %}
+{% enddoc %}
+
+<section class="hero-banner hero-banner--{{ text_alignment | default: 'center' }}">
+  {% if background_image %}
+    <div class="hero-banner__image">
+      {{ background_image | img_url: 'master' | img_tag }}
+      <div class="hero-banner__overlay" style="opacity: {{ overlay_opacity | default: 30 | divided_by: 100.0 }}"></div>
+    </div>
+  {% endif %}
+  
+  <div class="hero-banner__content">
+    {% if heading %}
+      <h1 class="hero-banner__heading">{{ heading }}</h1>
+    {% endif %}
+    
+    {% if subheading %}
+      <p class="hero-banner__subheading">{{ subheading }}</p>
+    {% endif %}
+    
+    {% if button_text and button_link %}
+      <a href="{{ button_link }}" class="hero-banner__button btn btn--primary">
+        {{ button_text }}
+      </a>
+    {% endif %}
+  </div>
+</section>
+
+{% comment %}
+  You can also use {% doc %} for documenting filters and complex logic
+{% endcomment %}
+
+{% doc %}
+  Calculate Discount Percentage
+  
+  Calculates and formats the discount percentage between regular and sale price.
+  
+  @param {number} regular_price - The regular price in cents
+  @param {number} sale_price - The sale price in cents
+  @return {string} Formatted discount percentage (e.g., "25% OFF")
+  
+  @example
+  {% assign discount = regular_price | minus: sale_price | times: 100.0 | divided_by: regular_price | round %}
+  <span class="discount-badge">{{ discount }}% OFF</span>
+{% enddoc %}
+
+{% if product.compare_at_price > product.price %}
+  {% assign discount = product.compare_at_price | minus: product.price | times: 100.0 | divided_by: product.compare_at_price | round %}
+  <span class="discount-badge">{{ discount }}% OFF</span>
+{% endif %}
