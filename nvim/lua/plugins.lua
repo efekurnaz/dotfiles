@@ -64,6 +64,9 @@ require("lazy").setup({
     end,
   },
 
+  -- show colors inline for CSS hex codes (#ff0000 shows as red background)
+  { "ap/vim-css-color", ft = { "css", "scss", "sass", "html", "javascript", "typescript", "json", "lua" } },
+
   -- ==========================================================================
   -- STATUSLINE AND UI
   -- ==========================================================================
@@ -88,6 +91,7 @@ require("lazy").setup({
       
       -- Enable git branch extension
       vim.g["airline#extensions#branch#enabled"] = 1
+      vim.g["airline#extensions#branch#format"] = '{branch}'
       vim.g["airline#extensions#hunks#enabled"] = 1
       
       -- Disable tmuxline integration
@@ -126,6 +130,15 @@ require("lazy").setup({
     end,
   },
 
+  -- ==========================================================================
+  -- TEXT MANIPULATION AND EDITING
+  -- ==========================================================================
+    {
+      "supermaven-inc/supermaven-nvim",
+      config = function()
+        require("supermaven-nvim").setup({})
+      end,
+    },
   -- ==========================================================================
   -- FUZZY FINDING AND FILE NAVIGATION
   -- ==========================================================================
@@ -214,7 +227,7 @@ require("lazy").setup({
   -- JavaScript/CSS/HTML formatting
   { 
     "prettier/vim-prettier", 
-    ft = { "javascript", "typescript", "css", "html", "json", "liquid" },
+    ft = { "javascript", "typescript", "css", "html", "json" },
     keys = {
       { "<leader>p", ":Prettier<CR>", desc = "Format document with Prettier" }
     }

@@ -59,6 +59,221 @@ autocmd({'BufNewFile', 'BufRead'}, {
   desc = 'Set SCSS syntax for .scss.liquid files'
 })
 
+-- Plain Liquid template files (*.liquid)
+-- Used in Shopify themes for HTML templates with Liquid templating
+autocmd({'BufNewFile', 'BufRead'}, {
+  pattern = '*.liquid',
+  callback = function()
+    -- Only set filetype to liquid if it's not already set to a specific type
+    -- This prevents overriding .js.liquid, .css.liquid, etc.
+    if vim.bo.filetype == '' then
+      vim.bo.filetype = 'liquid'
+      vim.bo.syntax = 'liquid'
+    end
+  end,
+  desc = 'Set Liquid syntax for .liquid template files'
+})
+
+-- =============================================================================
+-- LIQUID TEMPLATE SYNTAX HIGHLIGHTING
+-- =============================================================================
+-- Configure custom syntax highlighting for Liquid template files
+-- This ensures HTML tags appear in pink while maintaining Liquid syntax highlighting
+
+-- Liquid files (*.liquid)
+-- Used in Shopify themes for HTML templates with Liquid templating
+autocmd('FileType', {
+  pattern = 'liquid',
+  callback = function()
+    -- Wait a moment for treesitter to load, then apply custom Liquid colors
+    vim.defer_fn(function()
+      -- HTML tags in pink (using Dracula Pro pink color)
+      vim.cmd('hi @tag.liquid guifg=#FF79C6')
+      vim.cmd('hi @tag.delimiter.liquid guifg=#FF79C6')
+      vim.cmd('hi @tag.attribute.liquid guifg=#80FFEA')
+      
+      -- HTML tag names in bright pink
+      vim.cmd('hi @tag.name.liquid guifg=#FF79C6')
+      
+      -- HTML attributes in cyan
+      vim.cmd('hi @attribute.liquid guifg=#80FFEA')
+      
+      -- HTML strings in yellow
+      vim.cmd('hi @string.liquid guifg=#FFFF80')
+      
+      -- Liquid syntax in purple
+      vim.cmd('hi @variable.liquid guifg=#9580FF')
+      vim.cmd('hi @keyword.liquid guifg=#9580FF')
+      vim.cmd('hi @function.liquid guifg=#9580FF')
+      
+      -- Fallback to standard HTML highlight groups if treesitter groups don't work
+      vim.cmd('hi htmlTag guifg=#FF79C6')
+      vim.cmd('hi htmlTagName guifg=#FF79C6')
+      vim.cmd('hi htmlArg guifg=#80FFEA')
+      vim.cmd('hi htmlString guifg=#FFFF80')
+      vim.cmd('hi htmlSpecialChar guifg=#FF79C6')
+      
+      -- Liquid-specific highlighting
+      vim.cmd('hi liquidTag guifg=#9580FF')
+      vim.cmd('hi liquidVariable guifg=#9580FF')
+      vim.cmd('hi liquidFilter guifg=#9580FF')
+      
+      -- Additional HTML highlighting for better tag visibility
+      vim.cmd('hi htmlEndTag guifg=#FF79C6')
+      vim.cmd('hi htmlSpecialTagName guifg=#FF79C6')
+      vim.cmd('hi htmlTitle guifg=#FFFF80')
+      vim.cmd('hi htmlH1 guifg=#FFFF80')
+      vim.cmd('hi htmlH2 guifg=#FFFF80')
+      vim.cmd('hi htmlH3 guifg=#FFFF80')
+      vim.cmd('hi htmlH4 guifg=#FFFF80')
+      vim.cmd('hi htmlH5 guifg=#FFFF80')
+      vim.cmd('hi htmlH6 guifg=#FFFF80')
+      
+      -- Ensure Liquid delimiters are visible
+      vim.cmd('hi liquidDelimiter guifg=#9580FF')
+      vim.cmd('hi liquidOperator guifg=#9580FF')
+    end, 200)
+  end,
+  desc = 'Set custom Dracula Pro colors for Liquid template files with pink HTML tags'
+})
+
+-- #9580ff
+-- #ffff80
+-- #ff79C6
+-- #80FFEA
+
+
+-- =============================================================================
+-- BUFFER AUTO-RELOAD AND EXTERNAL FILE CHANGE DETECTION
+-- =============================================================================
+-- Automatically reload buffers when files change externally
+-- This prevents issues where files are modified outside of Neovim but buffers don't update
+-- Common scenarios: Git operations, file sync tools, multiple editors, build processes
+
+-- GLOBAL AUTO-RELOAD SETTING
+-- Enable auto-reload globally (can be disabled with :set noautoread)
+-- This is the foundation for all external file change detection
+vim.opt.autoread = true
+
+-- FOCUS-BASED FILE CHANGE DETECTION
+-- Check for external file changes when Neovim gains focus
+-- This catches changes that happened while Neovim was in the background
+autocmd('FocusGained', {
+  callback = function()
+    -- Check if any buffers have been modified externally
+    -- This triggers the FileChangedShellPost event if changes are detected
+    vim.cmd('checktime')
+  end,
+  desc = 'Check for external file changes when Neovim gains focus'
+})
+
+-- AUTOMATIC BUFFER RELOADING
+-- Auto-reload buffer when file changes externally (if buffer is not modified)
+-- This prevents data loss while keeping buffers in sync with disk
+autocmd('FileChangedShellPost', {
+  callback = function()
+    -- Get the current buffer number to check its modification state
+    local buf = vim.api.nvim_get_current_buf()
+    
+    -- Check if the buffer has unsaved changes
+    -- If modified, we can't safely reload without user confirmation
+    if vim.bo[buf].modified then
+      -- If buffer has unsaved changes, show a warning
+      -- User must decide whether to save, discard changes, or manually reload
+      vim.notify(
+        'File changed externally but buffer has unsaved changes. Use :edit to reload.',
+        vim.log.levels.WARN,
+        { title = 'File Change Detected' }
+      )
+    else
+      -- If no unsaved changes, automatically reload the buffer
+      -- This keeps the buffer perfectly in sync with the disk file
+      vim.cmd('edit')
+      vim.notify(
+        'File changed externally. Buffer automatically reloaded.',
+        vim.log.levels.INFO,
+        { title = 'Auto-Reload' }
+      )
+    end
+  end,
+  desc = 'Auto-reload buffer when file changes externally (if no unsaved changes)'
+})
+
+-- WINDOW-BASED FILE CHANGE DETECTION
+-- Check for external changes when switching between windows
+-- This ensures changes are detected during normal navigation
+autocmd('WinEnter', {
+  callback = function()
+    -- Only check if we're in a normal buffer (not terminal, help, etc.)
+    -- Normal buffers are the only ones that can have external file changes
+    if vim.bo.buftype == '' then
+      vim.cmd('checktime')
+    end
+  end,
+  desc = 'Check for external file changes when entering a window'
+})
+
+-- BUFFER-BASED FILE CHANGE DETECTION
+-- Check for external changes when switching between buffers
+-- This catches changes when navigating between different files
+autocmd('BufEnter', {
+  callback = function()
+    -- Only check if we're in a normal buffer (not terminal, help, etc.)
+    -- Prevents unnecessary checks on special buffer types
+    if vim.bo.buftype == '' then
+      vim.cmd('checktime')
+    end
+  end,
+  desc = 'Check for external file changes when entering a buffer'
+})
+
+-- =============================================================================
+-- USER COMMANDS FOR MANUAL CONTROL
+-- =============================================================================
+-- Provide manual commands for users who want explicit control over file reloading
+-- These commands give users the ability to force reload or check for changes
+
+-- MANUAL FILE CHANGE DETECTION
+-- Check for external file changes in all buffers manually
+-- Useful when you suspect files have changed but auto-detection hasn't triggered
+vim.api.nvim_create_user_command('CheckTime', 'checktime', {
+  desc = 'Check for external file changes in all buffers'
+})
+
+-- SAFE BUFFER RELOADING
+-- Reload current buffer from disk (if no unsaved changes)
+-- This is the safe way to reload when auto-reload hasn't triggered
+vim.api.nvim_create_user_command('ReloadBuffer', function()
+  -- Get current buffer to check its modification state
+  local buf = vim.api.nvim_get_current_buf()
+  
+  -- Check if buffer has unsaved changes before reloading
+  -- This prevents accidental data loss
+  if vim.bo[buf].modified then
+    -- Show warning if buffer has unsaved changes
+    -- User must save first or use ForceReload to discard changes
+    vim.notify(
+      'Buffer has unsaved changes. Save first or use :edit! to force reload.',
+      vim.log.levels.WARN,
+      { title = 'Cannot Reload' }
+    )
+  else
+    -- Safe to reload since no unsaved changes exist
+    -- This brings the buffer in sync with the disk file
+    vim.cmd('edit')
+    vim.notify('Buffer reloaded from disk.', vim.log.levels.INFO, { title = 'Reloaded' })
+  end
+end, {
+  desc = 'Reload current buffer from disk (if no unsaved changes)'
+})
+
+-- FORCE BUFFER RELOADING
+-- Force reload current buffer from disk (discarding unsaved changes)
+-- Use with caution - this will lose any unsaved work in the buffer
+vim.api.nvim_create_user_command('ForceReload', 'edit!', {
+  desc = 'Force reload current buffer from disk (discarding unsaved changes)'
+})
+
 -- =============================================================================
 -- CODE QUALITY AND FORMATTING
 -- =============================================================================
@@ -119,8 +334,7 @@ autocmd('BufWritePost', {
 -- =============================================================================
 -- ADDITIONAL AUTOCOMMAND IDEAS
 -- =============================================================================
---[[
-You can add more autocommands here for additional functionality:
+-- You can add more autocommands here for additional functionality:
 
 -- Auto-format on save:
 autocmd('BufWritePre', {
@@ -147,7 +361,7 @@ autocmd('BufWritePre', {
   end,
 })
 
--- Set specific options for certain file types:
+-- Set specific options for certain file types
 autocmd('FileType', {
   pattern = 'markdown',
   callback = function()
@@ -167,21 +381,21 @@ autocmd('FileType', {
       -- Keys/properties in cyan (light blue as requested)
       vim.cmd('hi @property.json guifg=#80FFEA')
       vim.cmd('hi @string.special.key.json guifg=#80FFEA')
-      
-      -- Strings in yellow
+
+      -- Strings in yello
       vim.cmd('hi @string.json guifg=#FFFF80')
-      
+
       -- Numbers in purple
       vim.cmd('hi @number.json guifg=#9580FF')
-      
+
       -- Booleans and null in purple
       vim.cmd('hi @boolean.json guifg=#9580FF')
       vim.cmd('hi @constant.builtin.json guifg=#9580FF')
-      
+
       -- Braces, brackets, and punctuation in orange/pink
       vim.cmd('hi @punctuation.bracket.json guifg=#FFB86C')
       vim.cmd('hi @punctuation.delimiter.json guifg=#FF79C6')
-      
+
       -- Fallback to standard JSON highlight groups if treesitter groups don't work
       vim.cmd('hi jsonKeyword guifg=#80FFEA')
       vim.cmd('hi jsonString guifg=#FFFF80')
