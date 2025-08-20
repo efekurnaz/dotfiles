@@ -107,34 +107,42 @@ map('n', '<C-K>', ':bnext<CR>')
 -- Move to previous buffer
 map('n', '<C-J>', ':bprev<CR>')
 
--- Smart buffer close - focuses next file window, not Neo-tree
+-- Smart buffer close - ensures focus stays on files, not Neo-tree
 map('n', '<C-Q>', function()
-  -- Store current buffer to close it later
+  local current_win = vim.api.nvim_get_current_win()
   local current_buf = vim.api.nvim_get_current_buf()
   
-  -- Find all windows with file buffers (not Neo-tree)
+  -- Get all windows
   local windows = vim.api.nvim_list_wins()
-  local file_windows = {}
-  local current_win = vim.api.nvim_get_current_win()
+  local file_wins = {}
+  local neotree_win = nil
   
   for _, win in ipairs(windows) do
     local buf = vim.api.nvim_win_get_buf(win)
     local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
     local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
     
-    if ft ~= 'neo-tree' and bt == '' and win ~= current_win then
-      table.insert(file_windows, win)
+    if ft == 'neo-tree' then
+      neotree_win = win
+    elseif bt == '' and win ~= current_win then
+      table.insert(file_wins, win)
     end
   end
   
-  -- If there are other file windows, focus the first one before closing
-  if #file_windows > 0 then
-    vim.api.nvim_set_current_win(file_windows[1])
+  -- Switch to another file window FIRST if available
+  if #file_wins > 0 then
+    vim.api.nvim_set_current_win(file_wins[1])
+    vim.cmd('bdelete ' .. current_buf)
+  else
+    -- No other file windows, just close normally
+    vim.cmd('bdelete')
   end
   
-  -- Now close the original buffer
-  vim.cmd('bd ' .. current_buf)
-end, 'Close buffer and focus next file')
+  -- Ensure Neo-tree stays at correct width
+  if neotree_win then
+    vim.api.nvim_win_set_width(neotree_win, 40)
+  end
+end, { desc = 'Close buffer and focus next file' })
 
 -- =============================================================================
 -- SEARCH AND HIGHLIGHTING

@@ -1,0 +1,107 @@
+{% comment %}
+  Test Liquid template to verify Neovim Liquid support
+  This should demonstrate syntax highlighting, LSP features, and formatting
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="{{ shop.locale }}">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ page_title }} - {{ shop.name }}</title>
+  
+  {{ content_for_header }}
+  
+  {% comment %} Load stylesheets {% endcomment %}
+  {{ 'theme.css' | asset_url | stylesheet_tag }}
+  
+  {% if template contains 'product' %}
+    {{ 'product.css' | asset_url | stylesheet_tag }}
+  {% endif %}
+</head>
+<body class="template-{{ template | replace: '.', '-' | handle }}">
+  
+  {% comment %} Header section {% endcomment %}
+  {% section 'header' %}
+  
+  <main role="main">
+    {% comment %} Product loop example {% endcomment %}
+    {% for product in collection.products limit: 4 %}
+      <div class="product-item">
+        <h2>{{ product.title | escape }}</h2>
+        
+        {% if product.featured_image %}
+          {{ product.featured_image | img_url: 'medium' | img_tag: product.title }}
+        {% endif %}
+        
+        <p class="price">
+          {% if product.compare_at_price > product.price %}
+            <span class="sale-price">{{ product.price | money }}</span>
+            <s class="original-price">{{ product.compare_at_price | money }}</s>
+          {% else %}
+            {{ product.price | money }}
+          {% endif %}
+        </p>
+        
+        {% unless product.available %}
+          <span class="sold-out">{{ 'products.product.sold_out' | t }}</span>
+        {% else %}
+          <form action="/cart/add" method="post">
+            <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+            <button type="submit">{{ 'products.product.add_to_cart' | t }}</button>
+          </form>
+        {% endunless %}
+      </div>
+    {% else %}
+      <p>{{ 'collections.general.no_products' | t }}</p>
+    {% endfor %}
+    
+    {% comment %} Pagination example {% endcomment %}
+    {% paginate collection.products by 12 %}
+      {% if paginate.pages > 1 %}
+        <nav class="pagination">
+          {{ paginate | default_pagination }}
+        </nav>
+      {% endif %}
+    {% endpaginate %}
+  </main>
+  
+  {% comment %} Footer section {% endcomment %}
+  {% section 'footer' %}
+  
+  {% comment %} JavaScript files {% endcomment %}
+  {{ 'theme.js' | asset_url | script_tag }}
+  
+  {% comment %} Capture example {% endcomment %}
+  {% capture product_json %}
+    {
+      "id": {{ product.id | json }},
+      "title": {{ product.title | json }},
+      "price": {{ product.price | json }}
+    }
+  {% endcapture %}
+  
+  <script>
+    window.currentProduct = {{ product_json }};
+  </script>
+</body>
+</html>
+
+{% schema %}
+{
+  "name": "Test Template",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Welcome"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show description",
+      "default": true
+    }
+  ]
+}
+{% endschema %}

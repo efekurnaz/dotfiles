@@ -380,6 +380,9 @@ require("lazy").setup({
       
       -- Setup Tailwind v4 support
       require('config.tailwind-v4').setup()
+      
+      -- Setup Shopify Liquid LSP support
+      require('config.liquid-lsp').setup()
     end,
   },
   
@@ -418,7 +421,11 @@ require("lazy").setup({
       require("luasnip.loaders.from_vscode").lazy_load()
       
       cmp.setup({
-        enabled = false, -- Disable auto-popup completions
+        enabled = function()
+          -- Enable completions only for Liquid files
+          local buftype = vim.api.nvim_buf_get_option(0, 'filetype')
+          return buftype == 'liquid' or buftype:match('%.liquid$')
+        end,
         snippet = {
           expand = function(args)
             luasnip.lsp_expand(args.body)
@@ -436,12 +443,28 @@ require("lazy").setup({
         mapping = cmp.mapping.preset.insert({
           ["<C-b>"] = cmp.mapping.scroll_docs(-4),
           ["<C-f>"] = cmp.mapping.scroll_docs(4),
-          ["<C-Space>"] = cmp.mapping.complete(), -- Manual trigger only
+          ["<C-Space>"] = cmp.mapping.complete(), -- Manual trigger
           ["<C-e>"] = cmp.mapping.abort(),
           ["<CR>"] = cmp.mapping.confirm({ select = true }),
-          -- Tab is now free for Supermaven
+          -- For Liquid files, use arrow keys for completion navigation
+          ["<Down>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_next_item()
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          ["<Up>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item()
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          -- Tab is for Supermaven
           ["<Tab>"] = cmp.mapping(function(fallback)
-            fallback() -- Let Supermaven handle Tab
+            -- Let Supermaven handle Tab
+            fallback()
           end, { "i", "s" }),
           ["<S-Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
@@ -795,36 +818,42 @@ require("lazy").setup({
         desc = "Fix Neo-tree width after opening files"
       })
       
-      -- Better window focus management when closing buffers
-      vim.api.nvim_create_autocmd("BufWinLeave", {
-        callback = function()
-          -- Check if we're closing a regular file buffer
-          if vim.bo.buftype == '' then
-            vim.defer_fn(function()
-              -- Find all non-Neo-tree windows
-              local windows = vim.api.nvim_list_wins()
-              local file_windows = {}
+      -- Smart window management to prevent Neo-tree from taking focus
+      vim.api.nvim_create_autocmd("WinClosed", {
+        callback = function(args)
+          local winnr = tonumber(args.match)
+          if not winnr then return end
+          
+          vim.schedule(function()
+            -- Get all windows
+            local windows = vim.api.nvim_list_wins()
+            local neotree_win = nil
+            local file_wins = {}
+            
+            for _, win in ipairs(windows) do
+              local buf = vim.api.nvim_win_get_buf(win)
+              local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
+              local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
               
-              for _, win in ipairs(windows) do
-                local buf = vim.api.nvim_win_get_buf(win)
-                local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
-                local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
-                
-                -- Collect windows that contain regular files (not Neo-tree or special buffers)
-                if ft ~= 'neo-tree' and bt == '' then
-                  table.insert(file_windows, win)
-                end
+              if ft == 'neo-tree' then
+                neotree_win = win
+              elseif bt == '' then  -- Regular file buffer
+                table.insert(file_wins, win)
               end
-              
-              -- If there are file windows, focus on the first one
-              if #file_windows > 0 then
-                vim.api.nvim_set_current_win(file_windows[1])
-                fix_neotree_width() -- Also fix Neo-tree width
-              end
-            end, 10)
-          end
+            end
+            
+            -- If Neo-tree is focused but there are file windows, switch focus
+            if neotree_win and vim.api.nvim_get_current_win() == neotree_win and #file_wins > 0 then
+              vim.api.nvim_set_current_win(file_wins[1])
+            end
+            
+            -- Always fix Neo-tree width
+            if neotree_win then
+              vim.api.nvim_win_set_width(neotree_win, 40)
+            end
+          end)
         end,
-        desc = "Focus on file window after closing buffer, not Neo-tree"
+        desc = "Prevent Neo-tree from taking focus when closing windows"
       })
     end,
   },
@@ -949,12 +978,28 @@ require("lazy").setup({
   -- Shopify Liquid templating language
   { 
     "tpope/vim-liquid", 
-    ft = "liquid",
+    ft = { "liquid", "html.liquid", "css.liquid", "javascript.liquid", "json.liquid" },
     config = function()
       -- Ensure Liquid syntax highlighting works optimally
       vim.g.liquid_highlight_all = 1
       -- Set Liquid filetype for .liquid files
       vim.g.liquid_default_subtype = 'html'
+      
+      -- Configure Liquid-specific settings
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "liquid", "*.liquid" },
+        callback = function()
+          -- Enable matchit for % navigation between Liquid tags
+          vim.b.match_words = '{% if %}:{% elsif %}:{% else %}:{% endif %},'
+            .. '{% for %}:{% endfor %},'
+            .. '{% case %}:{% when %}:{% else %}:{% endcase %},'
+            .. '{% unless %}:{% endunless %},'
+            .. '{% capture %}:{% endcapture %},'
+            .. '{% comment %}:{% endcomment %},'
+            .. '{% raw %}:{% endraw %},'
+            .. '{% block %}:{% endblock %}'
+        end
+      })
     end
   },
 
@@ -1175,6 +1220,7 @@ require("lazy").setup({
         markdown = { "prettierd", "prettier", stop_after_first = true },
         graphql = { "prettierd", "prettier", stop_after_first = true },
         handlebars = { "prettier" },
+        liquid = { "prettier" },  -- Add Liquid formatting support
       },
       format_on_save = {
         timeout_ms = 500,
@@ -1183,6 +1229,21 @@ require("lazy").setup({
       formatters = {
         shfmt = {
           prepend_args = { "-i", "2" },
+        },
+        prettier = {
+          prepend_args = function(self, ctx)
+            local args = {}
+            
+            -- Add Liquid plugin for .liquid files
+            if vim.bo[ctx.buf].filetype == "liquid" then
+              table.insert(args, "--plugin")
+              table.insert(args, "@shopify/prettier-plugin-liquid")
+              table.insert(args, "--parser")
+              table.insert(args, "liquid-html")
+            end
+            
+            return args
+          end,
         },
       },
     },
@@ -1468,9 +1529,22 @@ require("lazy").setup({
       -- Add support for Liquid files
       local Rule = require('nvim-autopairs.rule')
       local npairs = require('nvim-autopairs')
+      local cond = require('nvim-autopairs.conds')
+      
+      -- Add Liquid tag pairs
       npairs.add_rules({
         Rule("{%", "%}", "liquid"),
         Rule("{{", "}}", "liquid"),
+        Rule("{%-", "-%}", "liquid"),
+        Rule("{{-", "-}}", "liquid"),
+      })
+      
+      -- Also add these rules for HTML files that might contain Liquid
+      npairs.add_rules({
+        Rule("{%", "%}", "html"),
+        Rule("{{", "}}", "html"),
+        Rule("{%-", "-%}", "html"),
+        Rule("{{-", "-}}", "html"),
       })
     end,
   },

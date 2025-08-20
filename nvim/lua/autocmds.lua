@@ -28,11 +28,21 @@ local autocmd = vim.api.nvim_create_autocmd
 autocmd({'BufNewFile', 'BufRead'}, {
   pattern = '*.js.liquid',
   callback = function()
-    -- Set filetype to JavaScript for proper syntax highlighting and indentation
-    vim.bo.filetype = 'javascript'
-    vim.bo.syntax = 'javascript'
+    -- Set composite filetype for better LSP and syntax support
+    vim.bo.filetype = 'javascript.liquid'
   end,
-  desc = 'Set JavaScript syntax for .js.liquid files'
+  desc = 'Set JavaScript+Liquid syntax for .js.liquid files'
+})
+
+-- TypeScript Liquid files (*.ts.liquid)
+-- Used in Shopify themes for TypeScript files with Liquid templating
+autocmd({'BufNewFile', 'BufRead'}, {
+  pattern = '*.ts.liquid',
+  callback = function()
+    -- Set composite filetype for better LSP and syntax support
+    vim.bo.filetype = 'typescript.liquid'
+  end,
+  desc = 'Set TypeScript+Liquid syntax for .ts.liquid files'
 })
 
 -- CSS Liquid files (*.css.liquid)
@@ -40,23 +50,32 @@ autocmd({'BufNewFile', 'BufRead'}, {
 autocmd({'BufNewFile', 'BufRead'}, {
   pattern = '*.css.liquid',
   callback = function()
-    -- Set filetype to CSS for proper syntax highlighting and indentation
-    vim.bo.filetype = 'css'
-    vim.bo.syntax = 'css'
+    -- Set composite filetype for better LSP and syntax support
+    vim.bo.filetype = 'css.liquid'
   end,
-  desc = 'Set CSS syntax for .css.liquid files'
+  desc = 'Set CSS+Liquid syntax for .css.liquid files'
 })
 
--- SCSS Liquid files (*.scss.liquid)
--- Used in Shopify themes for SCSS files with Liquid templating
+-- SCSS Liquid files (*.scss.liquid, *.sass.liquid)
+-- Used in Shopify themes for SCSS/SASS files with Liquid templating
 autocmd({'BufNewFile', 'BufRead'}, {
-  pattern = '*.scss.liquid',
+  pattern = {'*.scss.liquid', '*.sass.liquid'},
   callback = function()
-    -- Set filetype to SCSS for proper syntax highlighting and indentation
-    vim.bo.filetype = 'scss'
-    vim.bo.syntax = 'scss'
+    -- Set composite filetype for better LSP and syntax support
+    vim.bo.filetype = 'scss.liquid'
   end,
-  desc = 'Set SCSS syntax for .scss.liquid files'
+  desc = 'Set SCSS+Liquid syntax for .scss.liquid and .sass.liquid files'
+})
+
+-- JSON Liquid files (*.json.liquid)
+-- Used in Shopify themes for JSON config files with Liquid templating
+autocmd({'BufNewFile', 'BufRead'}, {
+  pattern = '*.json.liquid',
+  callback = function()
+    -- Set composite filetype for better LSP and syntax support
+    vim.bo.filetype = 'json.liquid'
+  end,
+  desc = 'Set JSON+Liquid syntax for .json.liquid files'
 })
 
 -- Plain Liquid template files (*.liquid)
@@ -64,14 +83,22 @@ autocmd({'BufNewFile', 'BufRead'}, {
 autocmd({'BufNewFile', 'BufRead'}, {
   pattern = '*.liquid',
   callback = function()
-    -- Only set filetype to liquid if it's not already set to a specific type
-    -- This prevents overriding .js.liquid, .css.liquid, etc.
-    if vim.bo.filetype == '' then
+    -- Only set filetype to liquid if it's not already a composite type
+    if not vim.bo.filetype:match('%.liquid$') then
       vim.bo.filetype = 'liquid'
-      vim.bo.syntax = 'liquid'
     end
   end,
   desc = 'Set Liquid syntax for .liquid template files'
+})
+
+-- Detect Shopify theme structure for better project context
+autocmd({'BufNewFile', 'BufRead'}, {
+  pattern = {'*/templates/*.json', '*/sections/*.json', '*/config/*.json', '*/locales/*.json'},
+  callback = function()
+    -- Enable JSON with comments for Shopify theme JSON files
+    vim.bo.filetype = 'jsonc'
+  end,
+  desc = 'Set JSONC filetype for Shopify theme JSON files'
 })
 
 -- =============================================================================
@@ -240,37 +267,45 @@ vim.api.nvim_create_user_command('CheckTime', 'checktime', {
   desc = 'Check for external file changes in all buffers'
 })
 
--- SMART WINDOW CLOSE
--- Override :q to focus on next file window instead of Neo-tree
-vim.api.nvim_create_autocmd("CmdlineLeave", {
-  pattern = "*",
-  callback = function()
-    local cmd = vim.fn.getcmdline()
-    if cmd == "q" or cmd == "q!" then
-      -- Before the quit happens, ensure Neo-tree isn't expanding
-      vim.defer_fn(function()
-        local windows = vim.api.nvim_list_wins()
-        local file_windows = {}
-        
-        for _, win in ipairs(windows) do
-          local buf = vim.api.nvim_win_get_buf(win)
-          local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
-          local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
-          
-          if ft ~= 'neo-tree' and bt == '' then
-            table.insert(file_windows, win)
-          end
-        end
-        
-        -- If there are file windows, ensure one is focused
-        if #file_windows > 0 then
-          pcall(vim.api.nvim_set_current_win, file_windows[1])
-        end
-      end, 5)
+-- SMART QUIT COMMAND
+-- Create custom quit command that handles window focus properly
+vim.api.nvim_create_user_command('Q', function(opts)
+  local current_win = vim.api.nvim_get_current_win()
+  local windows = vim.api.nvim_list_wins()
+  local file_wins = {}
+  local neotree_win = nil
+  
+  for _, win in ipairs(windows) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local ft = vim.api.nvim_buf_get_option(buf, 'filetype')
+    local bt = vim.api.nvim_buf_get_option(buf, 'buftype')
+    
+    if ft == 'neo-tree' then
+      neotree_win = win
+    elseif bt == '' and win ~= current_win then
+      table.insert(file_wins, win)
     end
-  end,
-  desc = "Ensure focus stays on file windows after :q"
-})
+  end
+  
+  -- If there are other file windows, switch to one first
+  if #file_wins > 0 then
+    vim.api.nvim_set_current_win(file_wins[1])
+  end
+  
+  -- Now close the original window
+  vim.api.nvim_win_close(current_win, opts.bang)
+  
+  -- Fix Neo-tree width
+  if neotree_win then
+    vim.api.nvim_win_set_width(neotree_win, 40)
+  end
+end, { bang = true, desc = 'Smart quit that focuses file windows' })
+
+-- Abbreviate :q to use our custom :Q command
+vim.cmd('cabbrev q Q')
+vim.cmd('cabbrev q! Q!')
+vim.cmd('cabbrev wq w<bar>Q')
+vim.cmd('cabbrev wq! w<bar>Q!')
 
 -- SAFE BUFFER RELOADING
 -- Reload current buffer from disk (if no unsaved changes)
