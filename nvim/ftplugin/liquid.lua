@@ -4,6 +4,12 @@
 -- This file contains settings specific to Liquid template files
 -- It loads automatically when a Liquid file is opened
 
+-- Load JSON syntax for schema blocks
+vim.cmd('runtime! syntax/json.vim')
+
+-- Force load our custom syntax overrides
+vim.cmd('runtime! after/syntax/liquid.vim')
+
 -- =============================================================================
 -- INDENTATION AND FORMATTING
 -- =============================================================================

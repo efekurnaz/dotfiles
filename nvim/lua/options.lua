@@ -184,6 +184,10 @@ opt.hidden = true              -- Allow switching between buffers without saving
 opt.swapfile = true           -- Disable swap files (can cause issues with file watchers)
 opt.showmatch = false          -- Don't jump to matching brackets (can be disorienting)
 
+-- Disable concealing - ALWAYS show actual characters (quotes, etc.)
+opt.conceallevel = 0           -- Never hide/conceal any characters
+opt.concealcursor = ''         -- Don't conceal even when cursor is on the line
+
 -- Clipboard integration - use system clipboard for all operations
 opt.clipboard:prepend({'unnamed', 'unnamedplus'})
 

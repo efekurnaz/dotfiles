@@ -82,19 +82,13 @@ map('n', '<leader>fE', ':Neotree toggle float<CR>', { desc = 'Float file explore
 map('n', '<C-O>', ':Ex<CR>')               -- Built-in file explorer (shorter command)
 
 -- =============================================================================
--- TERMINAL INTEGRATION
+-- CLAUDE CODE INTEGRATION
 -- =============================================================================
--- Quick access to Claude Code terminal
-
--- Toggle Claude terminal on the right (hide/show)
-map('n', '<leader>i', function()
-  require('config.claude-terminal').toggle_claude()
-end, { desc = 'Toggle Claude terminal' })
-
--- Completely close Claude terminal (end session)
-map('n', '<leader>I', function()
-  require('config.claude-terminal').close_claude()
-end, { desc = 'Close Claude session' })
+-- Claude Code plugin keybindings are configured in plugins.lua
+-- Available commands:
+-- <leader>i   - Toggle Claude Code terminal
+-- <leader>cc  - Continue Claude conversation
+-- <leader>cr  - Resume Claude conversation picker
 
 -- =============================================================================
 -- BUFFER NAVIGATION
@@ -184,6 +178,155 @@ map('n', '<leader>bd', '<C-Q>', { desc = 'Delete buffer (smart)' })
 map('n', '<leader>bn', ':bnext<CR>', { desc = 'Next buffer' })
 map('n', '<leader>bp', ':bprevious<CR>', { desc = 'Previous buffer' })
 map('n', '<leader>bb', ':buffers<CR>', { desc = 'List buffers' })
+
+-- =============================================================================
+-- SEARCH AND REPLACE IN PROJECT
+-- =============================================================================
+-- Global search and replace functionality
+
+-- Function for search and replace across all files
+_G.search_and_replace = function()
+  -- Get search pattern
+  local search_pattern = vim.fn.input("Search for: ")
+  if search_pattern == "" then return end
+  
+  -- Get replacement pattern
+  local replace_pattern = vim.fn.input("Replace with: ")
+  if replace_pattern == nil then return end
+  
+  -- Get file pattern (optional)
+  local file_pattern = vim.fn.input("File pattern (e.g., *.lua, *.js) [Enter for all]: ")
+  if file_pattern == "" then
+    file_pattern = "*"
+  end
+  
+  -- Ask for confirmation
+  local confirm = vim.fn.input("Replace '" .. search_pattern .. "' with '" .. replace_pattern .. "' in " .. file_pattern .. " files? (y/n): ")
+  if confirm:lower() ~= "y" then
+    print(" Cancelled")
+    return
+  end
+  
+  -- Build the command
+  local cmd = string.format(
+    "silent grep! '%s' --glob '%s' | cdo s/%s/%s/gc | update",
+    search_pattern:gsub("'", "'\\''"),
+    file_pattern,
+    vim.fn.escape(search_pattern, '/'),
+    vim.fn.escape(replace_pattern, '/')
+  )
+  
+  -- Execute the search and replace
+  vim.cmd("copen")
+  vim.cmd(cmd)
+  print(" Search and replace complete!")
+end
+
+-- Alternative: Using ripgrep for faster search and replace
+_G.rg_search_and_replace = function()
+  local search = vim.fn.input("Search for: ")
+  if search == "" then return end
+  
+  local replace = vim.fn.input("Replace with: ")
+  if replace == nil then return end
+  
+  local file_glob = vim.fn.input("File pattern (e.g., *.lua) [Enter for all]: ")
+  
+  -- Build ripgrep command to find files
+  local rg_cmd = "rg --files-with-matches"
+  if file_glob ~= "" then
+    rg_cmd = rg_cmd .. " --glob '" .. file_glob .. "'"
+  end
+  rg_cmd = rg_cmd .. " '" .. search:gsub("'", "'\\''") .. "'"
+  
+  -- Get list of files containing the search pattern
+  local files = vim.fn.systemlist(rg_cmd)
+  
+  if #files == 0 then
+    print(" No files found containing: " .. search)
+    return
+  end
+  
+  print(" Found " .. #files .. " files")
+  
+  -- Ask for confirmation
+  local confirm = vim.fn.input("Replace in " .. #files .. " files? (y/n): ")
+  if confirm:lower() ~= "y" then
+    print(" Cancelled")
+    return
+  end
+  
+  -- Perform replacement in each file
+  local count = 0
+  for _, file in ipairs(files) do
+    vim.cmd("edit " .. file)
+    local ok = pcall(vim.cmd, "%s/" .. vim.fn.escape(search, '/') .. "/" .. vim.fn.escape(replace, '/') .. "/g")
+    if ok then
+      vim.cmd("write")
+      count = count + 1
+    end
+  end
+  
+  print(" Replaced in " .. count .. " files")
+end
+
+-- Telescope-based search and replace (visual)
+_G.telescope_search_and_replace = function()
+  require('telescope.builtin').grep_string({
+    search = vim.fn.input("Search for: "),
+    prompt_title = "Search Results",
+    attach_mappings = function(prompt_bufnr, map)
+      local actions = require('telescope.actions')
+      local action_state = require('telescope.actions.state')
+      
+      -- Replace in all found files
+      map('i', '<C-r>', function()
+        local replace = vim.fn.input("Replace with: ")
+        if replace == "" then return end
+        
+        actions.close(prompt_bufnr)
+        
+        -- Get all entries
+        local picker = action_state.get_current_picker(prompt_bufnr)
+        local entries = {}
+        for entry in picker.manager:iter() do
+          table.insert(entries, entry)
+        end
+        
+        -- Process each file
+        local files_processed = {}
+        for _, entry in ipairs(entries) do
+          local filename = entry.filename or entry.value.filename
+          if filename and not files_processed[filename] then
+            files_processed[filename] = true
+            vim.cmd("edit " .. filename)
+            vim.cmd("%s/" .. vim.fn.escape(picker.prompt_term, '/') .. "/" .. vim.fn.escape(replace, '/') .. "/g")
+            vim.cmd("write")
+          end
+        end
+        
+        print(" Replaced in " .. vim.tbl_count(files_processed) .. " files")
+      end)
+      
+      return true
+    end,
+  })
+end
+
+-- Key mappings for search and replace
+map('n', '<leader>sr', ':lua search_and_replace()<CR>', { desc = 'Search and replace in all files' })
+map('n', '<leader>sR', ':lua rg_search_and_replace()<CR>', { desc = 'Search and replace with ripgrep' })
+map('n', '<leader>st', ':lua telescope_search_and_replace()<CR>', { desc = 'Search and replace with Telescope' })
+
+-- Quick project-wide search and replace for word under cursor
+map('n', '<leader>sw', function()
+  local word = vim.fn.expand('<cword>')
+  local replace = vim.fn.input("Replace '" .. word .. "' with: ")
+  if replace == "" then return end
+  
+  vim.cmd("cdo s/\\<" .. word .. "\\>/" .. replace .. "/gc | update")
+  print(" Replaced '" .. word .. "' with '" .. replace .. "'")
+end, { desc = 'Replace word under cursor in all files' })
 
 -- =============================================================================
 -- SEARCH AND HIGHLIGHTING
@@ -389,9 +532,10 @@ Common workflow examples:
    - Tab/Shift+Tab in completion menu
    - <C-Space> to trigger completion
 
-8. Claude Integration:
-   - <leader>i to toggle Claude terminal (hide/show, preserves conversation)
-   - <leader>I (shift+i) to completely close Claude session
+8. Claude Code Integration:
+   - <leader>i to toggle Claude Code terminal
+   - <leader>cc to continue current Claude conversation
+   - <leader>cr to resume a previous Claude conversation
    - Escape or <C-\><C-n> to exit terminal insert mode
 
 9. Which-key Help:

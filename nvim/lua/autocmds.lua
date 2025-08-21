@@ -114,54 +114,198 @@ autocmd('FileType', {
   callback = function()
     -- Wait a moment for treesitter to load, then apply custom Liquid colors
     vim.defer_fn(function()
-      -- HTML tags in pink (using Dracula Pro pink color)
-      vim.cmd('hi @tag.liquid guifg=#FF79C6')
-      vim.cmd('hi @tag.delimiter.liquid guifg=#FF79C6')
-      vim.cmd('hi @tag.attribute.liquid guifg=#80FFEA')
+      -- First, apply JSON colors for schema blocks
+      -- Keys/properties in cyan
+      vim.cmd('hi @property.json guifg=#8BE9FD guibg=NONE')
+      vim.cmd('hi @string.special.key.json guifg=#8BE9FD guibg=NONE')
+      vim.cmd('hi @label.json guifg=#8BE9FD guibg=NONE')
+
+      -- ALL values in yellow (strings)
+      vim.cmd('hi @string.json guifg=#F1FA8C guibg=NONE')
+      vim.cmd('hi @string.quoted.json guifg=#F1FA8C guibg=NONE')
+
+      -- Numbers in purple
+      vim.cmd('hi @number.json guifg=#BD93F9 guibg=NONE')
+
+      -- Booleans and null in orange
+      vim.cmd('hi @boolean.json guifg=#FFB86C')
+      vim.cmd('hi @constant.builtin.json guifg=#FFB86C')
+      vim.cmd('hi @constant.json guifg=#FFB86C')
+
+      -- Braces, brackets, and punctuation in pink
+      vim.cmd('hi @punctuation.bracket.json guifg=#FF79C6')
+      vim.cmd('hi @punctuation.delimiter.json guifg=#FF79C6')
+
+      -- Fallback JSON groups
+      vim.cmd('hi jsonKeyword guifg=#8BE9FD guibg=NONE')
+      vim.cmd('hi jsonKey guifg=#8BE9FD guibg=NONE')
+      vim.cmd('hi jsonString guifg=#F1FA8C guibg=NONE')
+      vim.cmd('hi jsonNumber guifg=#BD93F9 guibg=NONE')
+      vim.cmd('hi jsonBoolean guifg=#FFB86C')
+      vim.cmd('hi jsonNull guifg=#FFB86C')
+      vim.cmd('hi jsonBraces guifg=#FF79C6')
+      vim.cmd('hi jsonBrackets guifg=#FF79C6')
+      vim.cmd('hi jsonQuote guifg=#F1FA8C')
+      vim.cmd('hi jsonNoise guifg=#FF79C6')
       
-      -- HTML tag names in bright pink
-      vim.cmd('hi @tag.name.liquid guifg=#FF79C6')
+      -- Now apply Liquid-specific colors
+      -- LIQUID TAGS AND KEYWORDS
+      -- Purple for Liquid control flow keywords (if, for, assign, capture, etc.)
+      vim.cmd('hi @keyword.liquid guifg=#BD93F9')           -- Purple for keywords
+      vim.cmd('hi @keyword.control.liquid guifg=#BD93F9')   -- if, for, case, unless
+      vim.cmd('hi @keyword.directive.liquid guifg=#BD93F9') -- assign, capture
+      vim.cmd('hi @tag.liquid guifg=#BD93F9')              -- Liquid tags
       
-      -- HTML attributes in cyan
-      vim.cmd('hi @attribute.liquid guifg=#80FFEA')
+      -- LIQUID DELIMITERS
+      -- Pink for Liquid delimiters {%, {{, }}, %}
+      vim.cmd('hi @punctuation.delimiter.liquid guifg=#FF79C6')
+      vim.cmd('hi @punctuation.bracket.liquid guifg=#FF79C6')
+      vim.cmd('hi liquidDelimiter guifg=#FF79C6')
       
-      -- HTML strings in yellow - preserve vim-css-color backgrounds
-      vim.cmd('hi @string.liquid guifg=#FFFF80 guibg=NONE')
+      -- LIQUID VARIABLES
+      -- First set up Shopify global objects to be purple BEFORE other variable rules
+      vim.cmd([[
+        " Define Shopify global objects that should always be purple
+        syntax keyword liquidGlobalObject shop product collection section block page request routes settings contained
+        syntax keyword liquidGlobalObject forloop tablerowloop paginate form cart customer linklists handle contained
+        syntax keyword liquidGlobalObject template theme images scripts stylesheets site contained
+        syntax keyword liquidGlobalObject all_products articles blogs collections pages links contained
+        syntax keyword liquidGlobalObject current_page current_tags powered_by canonical_url contained
+        hi! liquidGlobalObject guifg=#BD93F9
+        
+        " Match these globals in variable contexts
+        syntax match liquidGlobalVar "\<\(shop\|product\|collection\|section\|block\|page\|request\|routes\|settings\|forloop\|tablerowloop\|paginate\|form\|cart\|customer\|linklists\|handle\|template\|theme\|images\|scripts\|stylesheets\|site\|all_products\|articles\|blogs\|collections\|pages\|links\|current_page\|current_tags\|powered_by\|canonical_url\)\>\ze\(\.\|[^a-zA-Z0-9_]\|$\)" contained containedin=liquidOutput,liquidTag
+        hi! liquidGlobalVar guifg=#BD93F9
+      ]])
       
-      -- Liquid syntax in purple
-      vim.cmd('hi @variable.liquid guifg=#9580FF')
-      vim.cmd('hi @keyword.liquid guifg=#9580FF')
-      vim.cmd('hi @function.liquid guifg=#9580FF')
+      -- Variables being assigned (left side of assign) - White
+      vim.cmd('hi @variable.assignment.liquid guifg=#F8F8F2')
+      vim.cmd('hi @lvalue.liquid guifg=#F8F8F2')
       
-      -- Fallback to standard HTML highlight groups if treesitter groups don't work
+      -- Default for other variables (custom/local) - Orange
+      vim.cmd('hi @variable.liquid guifg=#FFB86C')
+      vim.cmd('hi liquidVariable guifg=#FFB86C')
+      
+      -- Override for built-in variables
+      vim.cmd('hi! @variable.builtin.liquid guifg=#BD93F9')
+      vim.cmd('hi! @namespace.liquid guifg=#BD93F9')
+      vim.cmd('hi! @constant.builtin.liquid guifg=#BD93F9')
+      
+      -- White for properties after dots (section.id -> id is white)
+      vim.cmd('hi @property.liquid guifg=#F8F8F2')
+      vim.cmd('hi @field.liquid guifg=#F8F8F2')
+      vim.cmd('hi @punctuation.accessor.liquid guifg=#F8F8F2') -- The dot itself
+      
+      -- LIQUID FILTERS
+      -- Cyan for filters (after pipe |)
+      vim.cmd('hi @function.liquid guifg=#8BE9FD')
+      vim.cmd('hi @function.call.liquid guifg=#8BE9FD')
+      vim.cmd('hi @function.builtin.liquid guifg=#8BE9FD')
+      vim.cmd('hi liquidFilter guifg=#8BE9FD')
+      
+      -- LIQUID OPERATORS
+      -- Pink for operators (==, !=, >, <, |, :, etc.)
+      vim.cmd('hi @operator.liquid guifg=#FF79C6')
+      vim.cmd('hi liquidOperator guifg=#FF79C6')
+      vim.cmd('hi @punctuation.special.liquid guifg=#FF79C6')
+      
+      -- STRINGS
+      -- Yellow for all string values
+      vim.cmd('hi @string.liquid guifg=#F1FA8C')
+      vim.cmd('hi @string.quoted.liquid guifg=#F1FA8C')
+      vim.cmd('hi @string.special.liquid guifg=#F1FA8C')
+      vim.cmd('hi liquidString guifg=#F1FA8C')
+      
+      -- NUMBERS AND BOOLEANS
+      -- Purple for numbers, orange for booleans
+      vim.cmd('hi @number.liquid guifg=#BD93F9')
+      vim.cmd('hi @boolean.liquid guifg=#FFB86C')
+      vim.cmd('hi @constant.liquid guifg=#FFB86C')
+      vim.cmd('hi @constant.builtin.liquid guifg=#FFB86C')
+      
+      -- COMMENTS
+      -- Gray/comment color
+      vim.cmd('hi @comment.liquid guifg=#6272A4')
+      vim.cmd('hi liquidComment guifg=#6272A4')
+      
+      -- HTML ELEMENTS IN LIQUID FILES
+      -- Keep HTML tags distinct from Liquid
+      vim.cmd('hi @tag.html guifg=#FF79C6')
+      vim.cmd('hi @tag.delimiter.html guifg=#FF79C6')
+      vim.cmd('hi @tag.attribute.html guifg=#50FA7B')
       vim.cmd('hi htmlTag guifg=#FF79C6')
       vim.cmd('hi htmlTagName guifg=#FF79C6')
-      vim.cmd('hi htmlArg guifg=#80FFEA')
-      vim.cmd('hi htmlString guifg=#FFFF80')
-      vim.cmd('hi htmlSpecialChar guifg=#FF79C6')
+      vim.cmd('hi htmlArg guifg=#50FA7B')
+      vim.cmd('hi htmlString guifg=#F1FA8C')
       
-      -- Liquid-specific highlighting
-      vim.cmd('hi liquidTag guifg=#9580FF')
-      vim.cmd('hi liquidVariable guifg=#9580FF')
-      vim.cmd('hi liquidFilter guifg=#9580FF')
+      -- LIQUID-SPECIFIC ELEMENTS
+      -- Special handling for render/include tags
+      vim.cmd('hi @keyword.include.liquid guifg=#FF79C6')  -- render, include keywords
+      vim.cmd('hi @string.special.path.liquid guifg=#F1FA8C') -- template paths
       
-      -- Additional HTML highlighting for better tag visibility
-      vim.cmd('hi htmlEndTag guifg=#FF79C6')
-      vim.cmd('hi htmlSpecialTagName guifg=#FF79C6')
-      vim.cmd('hi htmlTitle guifg=#FFFF80')
-      vim.cmd('hi htmlH1 guifg=#FFFF80')
-      vim.cmd('hi htmlH2 guifg=#FFFF80')
-      vim.cmd('hi htmlH3 guifg=#FFFF80')
-      vim.cmd('hi htmlH4 guifg=#FFFF80')
-      vim.cmd('hi htmlH5 guifg=#FFFF80')
-      vim.cmd('hi htmlH6 guifg=#FFFF80')
+      -- Parameters in render tags (key: value pairs)
+      -- Green for parameter names (foo in foo:bar)
+      vim.cmd('hi @parameter.liquid guifg=#50FA7B')
+      vim.cmd('hi @variable.parameter.liquid guifg=#50FA7B')
+      vim.cmd('hi @label.liquid guifg=#50FA7B')
+      vim.cmd('hi liquidParameterName guifg=#50FA7B')
       
-      -- Ensure Liquid delimiters are visible
-      vim.cmd('hi liquidDelimiter guifg=#9580FF')
-      vim.cmd('hi liquidOperator guifg=#9580FF')
+      -- Additional syntax rules for context-aware highlighting
+      vim.cmd([[
+        " Variable on left side of assign should be white
+        syn match liquidAssignStatement "{%\s*assign\s\+\w\+\s*=" contains=liquidAssignKeyword,liquidAssignTarget,liquidAssignOp
+        syn match liquidAssignKeyword "\<assign\>" contained
+        syn match liquidAssignTarget "\s\+\zs\w\+\ze\s*=" contained
+        syn match liquidAssignOp "=" contained
+        hi! liquidAssignKeyword guifg=#BD93F9
+        hi! liquidAssignTarget guifg=#F8F8F2
+        hi! liquidAssignOp guifg=#FF79C6
+        
+        " Capture variable names should be white
+        syn match liquidCaptureStatement "{%\s*capture\s\+\w\+" contains=liquidCaptureKeyword,liquidCaptureTarget
+        syn match liquidCaptureKeyword "\<capture\>" contained
+        syn match liquidCaptureTarget "\s\+\zs\w\+\ze" contained
+        hi! liquidCaptureKeyword guifg=#BD93F9
+        hi! liquidCaptureTarget guifg=#F8F8F2
+        
+        " For loop iterator variables should be white (being assigned)
+        syn match liquidForStatement "{%\s*for\s\+\w\+\s\+in\s" contains=liquidForKeyword,liquidForIterator,liquidForIn
+        syn match liquidForKeyword "\<for\>" contained
+        syn match liquidForIterator "\s\+\zs\w\+\ze\s\+in\s" contained
+        syn match liquidForIn "\<in\>" contained
+        hi! liquidForKeyword guifg=#BD93F9
+        hi! liquidForIterator guifg=#F8F8F2
+        hi! liquidForIn guifg=#BD93F9
+        
+        " Render/include parameter names should be green
+        syn match liquidRenderParam "\w\+:" contained containedin=liquidTag
+        hi! liquidRenderParam guifg=#50FA7B
+        
+        " Make sure properties after dots are white
+        syn match liquidDotAccess "\.\zs\w\+" contained containedin=liquidOutput,liquidTag
+        hi! liquidDotAccess guifg=#F8F8F2
+      ]])
+      
+      -- Ensure proper fallbacks
+      vim.cmd('hi liquidKeyword guifg=#BD93F9')
+      vim.cmd('hi liquidConditional guifg=#BD93F9')
+      vim.cmd('hi liquidRepeat guifg=#BD93F9')
+      vim.cmd('hi liquidStatement guifg=#BD93F9')
+      
+      -- Special handling for schema blocks - ensure JSON highlighting inside
+      vim.cmd([[
+        " Match schema blocks and apply JSON syntax
+        syn region liquidSchema start="{%\s*schema\s*%}" end="{%\s*endschema\s*%}" contains=@jsonSyntax keepend
+        syn include @jsonSyntax syntax/json.vim
+        
+        " Also ensure the schema tags themselves are highlighted
+        syn match liquidSchemaTag "{%\s*schema\s*%}"
+        syn match liquidSchemaTag "{%\s*endschema\s*%}"
+        hi liquidSchemaTag guifg=#BD93F9
+      ]])
     end, 200)
   end,
-  desc = 'Set custom Dracula Pro colors for Liquid template files with pink HTML tags'
+  desc = 'Set custom Dracula Pro colors for Liquid template files with proper syntax separation'
 })
 
 -- #9580ff
@@ -553,42 +697,50 @@ autocmd('ColorScheme', {
 -- JSON SYNTAX HIGHLIGHTING FIX
 -- Fix JSON colors to use proper Dracula Pro colors
 autocmd('FileType', {
-  pattern = 'json',
+  pattern = {'json', 'jsonc'},
   callback = function()
+    -- IMPORTANT: Disable concealing to show quotes
+    vim.opt_local.conceallevel = 0
+    vim.opt_local.concealcursor = ''
+    
     -- Wait a moment for colorscheme to load, then apply JSON colors
     vim.defer_fn(function()
       -- Use the correct treesitter highlight groups for JSON
-      -- Keys/properties in cyan (light blue as requested) - preserve vim-css-color backgrounds
-      vim.cmd('hi @property.json guifg=#80FFEA guibg=NONE')
-      vim.cmd('hi @string.special.key.json guifg=#80FFEA guibg=NONE')
+      -- Keys/properties in cyan
+      vim.cmd('hi @property.json guifg=#8BE9FD guibg=NONE')
+      vim.cmd('hi @string.special.key.json guifg=#8BE9FD guibg=NONE')
+      vim.cmd('hi @label.json guifg=#8BE9FD guibg=NONE')
 
-      -- Strings in yellow - preserve vim-css-color backgrounds
-      vim.cmd('hi @string.json guifg=#FFFF80 guibg=NONE')
+      -- ALL values in yellow (strings, regardless of being keys or values)
+      vim.cmd('hi @string.json guifg=#F1FA8C guibg=NONE')
+      vim.cmd('hi @string.quoted.json guifg=#F1FA8C guibg=NONE')
 
-      -- Numbers in purple - preserve vim-css-color backgrounds
-      vim.cmd('hi @number.json guifg=#9580FF guibg=NONE')
+      -- Numbers in purple
+      vim.cmd('hi @number.json guifg=#BD93F9 guibg=NONE')
 
-      -- Booleans and null in purple
-      vim.cmd('hi @boolean.json guifg=#9580FF')
-      vim.cmd('hi @constant.builtin.json guifg=#9580FF')
+      -- Booleans and null in orange
+      vim.cmd('hi @boolean.json guifg=#FFB86C')
+      vim.cmd('hi @constant.builtin.json guifg=#FFB86C')
+      vim.cmd('hi @constant.json guifg=#FFB86C')
 
-      -- Braces, brackets, and punctuation in orange/pink
-      vim.cmd('hi @punctuation.bracket.json guifg=#FFB86C')
+      -- Braces, brackets, and punctuation in pink
+      vim.cmd('hi @punctuation.bracket.json guifg=#FF79C6')
       vim.cmd('hi @punctuation.delimiter.json guifg=#FF79C6')
 
       -- Fallback to standard JSON highlight groups if treesitter groups don't work
-      vim.cmd('hi jsonKeyword guifg=#80FFEA guibg=NONE')
-      vim.cmd('hi jsonString guifg=#FFFF80 guibg=NONE')
-      vim.cmd('hi jsonNumber guifg=#9580FF guibg=NONE')
-      vim.cmd('hi jsonBoolean guifg=#9580FF')
-      vim.cmd('hi jsonNull guifg=#9580FF')
-      vim.cmd('hi jsonBraces guifg=#FFB86C')
-      vim.cmd('hi jsonBrackets guifg=#FFB86C')
-      vim.cmd('hi jsonQuote guifg=#FF79C6')
+      vim.cmd('hi jsonKeyword guifg=#8BE9FD guibg=NONE')
+      vim.cmd('hi jsonKey guifg=#8BE9FD guibg=NONE')
+      vim.cmd('hi jsonString guifg=#F1FA8C guibg=NONE')
+      vim.cmd('hi jsonNumber guifg=#BD93F9 guibg=NONE')
+      vim.cmd('hi jsonBoolean guifg=#FFB86C')
+      vim.cmd('hi jsonNull guifg=#FFB86C')
+      vim.cmd('hi jsonBraces guifg=#FF79C6')
+      vim.cmd('hi jsonBrackets guifg=#FF79C6')
+      vim.cmd('hi jsonQuote guifg=#F1FA8C')
       vim.cmd('hi jsonNoise guifg=#FF79C6')
     end, 200)
   end,
-  desc = 'Set proper Dracula Pro colors for JSON files'
+  desc = 'Set proper Dracula Pro colors and disable concealing for JSON files'
 })
 
 -- =============================================================================

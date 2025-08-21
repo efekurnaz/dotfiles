@@ -21,10 +21,10 @@ function M.setup()
     callback = function(args)
       if has_tailwind_v4_directives(args.buf) then
         -- Disable diagnostics for this buffer
-        vim.diagnostic.disable(args.buf)
+        vim.diagnostic.enable(false, { bufnr = args.buf })
         
         -- Also disable LSP diagnostics specifically
-        local clients = vim.lsp.get_active_clients({bufnr = args.buf})
+        local clients = vim.lsp.get_clients({bufnr = args.buf})
         for _, client in pairs(clients) do
           if client.name == "cssls" then
             client.stop()

@@ -1,0 +1,69 @@
+{% comment %}
+  Test file to demonstrate Liquid syntax coloring
+  Variables should be colored based on context
+{% endcomment %}
+
+{% comment %} ASSIGN STATEMENTS - Variable being assigned should be WHITE {% endcomment %}
+{% assign bar = 'string value' %}          <!-- bar is WHITE, 'string value' is YELLOW -->
+{% assign modal_id = 'modal-1' %}          <!-- modal_id is WHITE, 'modal-1' is YELLOW -->
+{% assign custom_var = section.id %}       <!-- custom_var is WHITE, section is PURPLE, id is WHITE -->
+
+{% comment %} CAPTURE STATEMENTS - Variable being captured should be WHITE {% endcomment %}
+{% capture my_content %}                   <!-- my_content is WHITE -->
+  Some content here
+{% endcapture %}
+
+{% comment %} USING ASSIGNED VARIABLES - Should be ORANGE {% endcomment %}
+{{ bar }}                                   <!-- bar is ORANGE (was assigned above) -->
+{{ modal_id }}                              <!-- modal_id is ORANGE (was assigned above) -->
+{{ custom_var }}                            <!-- custom_var is ORANGE (was assigned above) -->
+
+{% comment %} GLOBAL/BUILT-IN OBJECTS - Should be PURPLE {% endcomment %}
+{{ product.title }}                         <!-- product is PURPLE (global), title is WHITE -->
+{{ section.id }}                            <!-- section is PURPLE (global), id is WHITE -->
+{{ shop.name }}                             <!-- shop is PURPLE (global), name is WHITE -->
+{{ forloop.index }}                         <!-- forloop is PURPLE (global), index is WHITE -->
+
+{% comment %} RENDER TAGS WITH PARAMETERS {% endcomment %}
+{% comment %} Parameter names (before colon) should be GREEN {% endcomment %}
+{% comment %} Parameter values depend on whether they're assigned or global {% endcomment %}
+
+{% comment %} Using assigned variable as parameter value - ORANGE {% endcomment %}
+{% render 'button', text: bar, id: modal_id %}
+<!-- text is GREEN, bar is ORANGE (assigned above) -->
+<!-- id is GREEN, modal_id is ORANGE (assigned above) -->
+
+{% comment %} Using global object as parameter value - PURPLE {% endcomment %}
+{% render 'product-card', product: product, title: product.title %}
+<!-- product (param) is GREEN, product (value) is PURPLE (global) -->
+<!-- title is GREEN, product is PURPLE, .title is WHITE -->
+
+{% comment %} Mixed example {% endcomment %}
+{% assign my_text = 'Click me' %}
+{% render 'button', 
+  text: my_text,              <!-- text is GREEN, my_text is ORANGE (assigned) -->
+  url: product.url,           <!-- url is GREEN, product is PURPLE (global), url is WHITE -->
+  class: 'btn-primary',       <!-- class is GREEN, 'btn-primary' is YELLOW (string) -->
+  disabled: false,            <!-- disabled is GREEN, false is ORANGE (boolean) -->
+  tabindex: 1                 <!-- tabindex is GREEN, 1 is PURPLE (number) -->
+%}
+
+{% comment %} FOR LOOPS - Iterator variable {% endcomment %}
+{% for item in collection.products %}      <!-- item should be WHITE (being assigned by for loop) -->
+  {{ item.title }}                         <!-- item is ORANGE (local to loop), title is WHITE -->
+  {{ forloop.index }}                      <!-- forloop is PURPLE (global), index is WHITE -->
+{% endfor %}
+
+{% comment %} UNDEFINED VARIABLES {% endcomment %}
+{{ undefined_var }}                         <!-- Should be ORANGE (assumes local) or PURPLE (if matches global pattern) -->
+
+{% comment %} COMPLEX EXAMPLE {% endcomment %}
+{% assign slider_id = 'slider-' | append: section.id %}
+{% for post in shop.metaobjects.posts.values limit: 24 %}
+  {% render 'post-card', 
+    post: post,                            <!-- post (param) is GREEN, post (value) is ORANGE (loop variable) -->
+    slider_id: slider_id,                  <!-- slider_id (param) is GREEN, slider_id (value) is ORANGE (assigned) -->
+    index: forloop.index,                  <!-- index is GREEN, forloop is PURPLE, .index is WHITE -->
+    collection: collection                 <!-- collection (param) is GREEN, collection (value) is PURPLE (global) -->
+  %}
+{% endfor %}
