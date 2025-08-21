@@ -51,9 +51,9 @@ vim.g.maplocalleader = ' '
 -- =============================================================================
 -- Make it easier to enter command mode
 
--- Press spacebar to type : in command mode (faster than reaching for :)
--- This is a huge productivity boost for frequent command users
-map('n', '<space>', ':')
+-- NOTE: Removed mapping of <space> to ':' because it conflicts with leader key
+-- If you want a quick way to enter command mode, consider using:
+-- map('n', ';', ':')  -- Semicolon to command mode
 
 -- =============================================================================
 -- FILE NAVIGATION AND FUZZY FINDING
@@ -86,7 +86,7 @@ map('n', '<C-O>', ':Ex<CR>')               -- Built-in file explorer (shorter co
 -- =============================================================================
 -- Claude Code plugin keybindings are configured in plugins.lua
 -- Available commands:
--- <leader>i   - Toggle Claude Code terminal
+-- <leader>j   - Toggle Claude Code terminal
 -- <leader>cc  - Continue Claude conversation
 -- <leader>cr  - Resume Claude conversation picker
 
@@ -533,9 +533,10 @@ Common workflow examples:
    - <C-Space> to trigger completion
 
 8. Claude Code Integration:
-   - <leader>i to toggle Claude Code terminal
+   - <leader>j to toggle Claude Code terminal
    - <leader>cc to continue current Claude conversation
    - <leader>cr to resume a previous Claude conversation
+   - <C-q> to quickly return focus to previous window from Claude terminal
    - Escape or <C-\><C-n> to exit terminal insert mode
 
 9. Which-key Help:

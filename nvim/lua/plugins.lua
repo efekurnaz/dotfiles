@@ -1091,6 +1091,8 @@ require("lazy").setup({
 		config = function()
 			local wk = require("which-key")
 			wk.setup({
+				preset = "modern",
+				delay = 300,
 				win = {
 					border = "rounded",
 					position = "bottom",
@@ -1104,20 +1106,17 @@ require("lazy").setup({
 					spacing = 3,
 					align = "left",
 				},
-				filter = function(mapping)
-					-- Ignore mappings with these patterns
-					local hidden_patterns = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^", ":" }
-					for _, pattern in ipairs(hidden_patterns) do
-						if mapping.desc and mapping.desc:find(pattern) then
-							return false
-						end
-					end
-					return true
-				end,
 				show_help = true,
+				show_keys = true,
 				triggers = {
 					{ "<auto>", mode = "nxsot" },
 					{ "<leader>", mode = { "n", "v" } },
+					{ "<C-w>", mode = { "n", "v" } },
+				},
+				disable = {
+					-- Don't disable anything
+					buftypes = {},
+					filetypes = {},
 				},
 			})
 
@@ -1131,6 +1130,33 @@ require("lazy").setup({
 				{ "<leader>u", group = "ui" },
 				{ "<leader>w", group = "windows" },
 				{ "<leader>t", group = "terminal" },
+			})
+			
+			-- Explicitly register window commands
+			wk.add({
+				{ "<C-w>", group = "window" },
+				{ "<C-w>h", desc = "Go to left window" },
+				{ "<C-w>j", desc = "Go to window below" },
+				{ "<C-w>k", desc = "Go to window above" },
+				{ "<C-w>l", desc = "Go to right window" },
+				{ "<C-w>w", desc = "Go to next window" },
+				{ "<C-w>s", desc = "Split window horizontally" },
+				{ "<C-w>v", desc = "Split window vertically" },
+				{ "<C-w>c", desc = "Close current window" },
+				{ "<C-w>o", desc = "Close other windows" },
+				{ "<C-w>q", desc = "Quit window" },
+				{ "<C-w>=", desc = "Make windows equal size" },
+				{ "<C-w>_", desc = "Maximize height" },
+				{ "<C-w>|", desc = "Maximize width" },
+				{ "<C-w>+", desc = "Increase height" },
+				{ "<C-w>-", desc = "Decrease height" },
+				{ "<C-w>>", desc = "Increase width" },
+				{ "<C-w><", desc = "Decrease width" },
+				{ "<C-w>T", desc = "Move window to new tab" },
+				{ "<C-w>r", desc = "Rotate windows" },
+				{ "<C-w>x", desc = "Exchange windows" },
+				{ "<C-w>p", desc = "Go to previous window" },
+				{ "<C-w>P", desc = "Go to preview window" },
 			})
 		end,
 	},
@@ -1511,7 +1537,7 @@ require("lazy").setup({
 		"greggh/claude-code.nvim",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		keys = {
-			{ "<leader>i", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude Code" },
+			{ "<leader>j", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude Code" },
 			{ "<leader>cc", "<cmd>ClaudeCodeContinue<cr>", desc = "Continue Claude conversation" },
 			{ "<leader>cr", "<cmd>ClaudeCodeResume<cr>", desc = "Resume Claude conversation" },
 		},
@@ -1521,32 +1547,19 @@ require("lazy").setup({
 					position = "vertical",
 					width = 80,
 				},
-				keymaps = {
-					toggle = "<leader>i",
-					continue_conversation = "<leader>cc",
-					resume_conversation = "<leader>cr",
-				},
 			})
 
 			-- Exclude Claude Code terminal from buffer list and airline tabline
-			vim.api.nvim_create_autocmd({"TermOpen", "BufEnter", "BufWinEnter"}, {
-				pattern = "*",
+			vim.api.nvim_create_autocmd({"TermOpen"}, {
+				pattern = "*claude*",
 				callback = function()
-					local bufname = vim.api.nvim_buf_get_name(0)
-					if bufname:match("term://.*claude") or bufname:match("Claude Code") then
-						vim.bo.buflisted = false
-						vim.bo.bufhidden = "hide"
-						
-						-- Add keybindings for Claude Code terminal
-						local opts = { buffer = true, silent = true }
-						-- Use <C-q> to quickly return to previous window
-						vim.keymap.set('t', '<C-q>', [[<C-\><C-n><C-w>p]], opts)
-						-- Standard window navigation in terminal mode
-						vim.keymap.set('t', '<C-w>h', [[<Cmd>wincmd h<CR>]], opts)
-						vim.keymap.set('t', '<C-w>l', [[<Cmd>wincmd l<CR>]], opts)
-						vim.keymap.set('t', '<C-w>j', [[<Cmd>wincmd j<CR>]], opts)
-						vim.keymap.set('t', '<C-w>k', [[<Cmd>wincmd k<CR>]], opts)
-					end
+					vim.bo.buflisted = false
+					vim.bo.bufhidden = "hide"
+					
+					-- Add keybindings specifically for Claude Code terminal
+					local opts = { buffer = true, silent = true }
+					-- Use <C-q> to quickly return to previous window
+					vim.keymap.set('t', '<C-q>', [[<C-\><C-n><C-w>p]], opts)
 				end,
 			})
 
