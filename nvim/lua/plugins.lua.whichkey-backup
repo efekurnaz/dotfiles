@@ -1084,45 +1084,79 @@ require("lazy").setup({
 	{
 		"folke/which-key.nvim",
 		event = "VeryLazy",
-		config = function()
-			-- Set timeout options before setup
+		init = function()
 			vim.o.timeout = true
 			vim.o.timeoutlen = 300
-			
+		end,
+		config = function()
 			local wk = require("which-key")
-			
-			-- Setup with some basic styling
 			wk.setup({
+				preset = "modern",
+				delay = 300,
 				win = {
 					border = "rounded",
+					position = "bottom",
+					margin = { 1, 0, 1, 0 },
+					padding = { 2, 2, 2, 2 },
+					winblend = 0,
+				},
+				layout = {
+					height = { min = 4, max = 25 },
+					width = { min = 20, max = 50 },
+					spacing = 3,
+					align = "left",
+				},
+				show_help = true,
+				show_keys = true,
+				triggers = {
+					{ "<auto>", mode = "nxsot" },
+					{ "<leader>", mode = { "n", "v" } },
+					{ "<C-w>", mode = { "n", "v" } },
+				},
+				disable = {
+					-- Don't disable anything
+					buftypes = {},
+					filetypes = {},
 				},
 			})
-			
-			-- Register leader groups
+
+			-- Register key groups using new spec format
 			wk.add({
-				{ "<leader>", group = "Leader" },
-				{ "<leader>f", group = "File/Find" },
-				{ "<leader>c", group = "Code" },
-				{ "<leader>g", group = "Git" },
-				{ "<leader>x", group = "Diagnostics" },
-				{ "<leader>s", group = "Search" },
-				{ "<leader>b", group = "Buffer" },
-				{ "<leader>q", group = "Session" },
-				{ "<leader>t", group = "Terminal" },
+				{ "<leader>f", group = "file/find" },
+				{ "<leader>c", group = "code" },
+				{ "<leader>g", group = "git" },
+				{ "<leader>x", group = "diagnostics/quickfix" },
+				{ "<leader>s", group = "search" },
+				{ "<leader>u", group = "ui" },
+				{ "<leader>w", group = "windows" },
+				{ "<leader>t", group = "terminal" },
 			})
 			
-			-- Register window commands
+			-- Explicitly register window commands
 			wk.add({
-				{ "<C-w>", group = "Window" },
-				{ "<C-w>h", desc = "Go left" },
-				{ "<C-w>j", desc = "Go down" },
-				{ "<C-w>k", desc = "Go up" },
-				{ "<C-w>l", desc = "Go right" },
-				{ "<C-w>s", desc = "Split horizontal" },
-				{ "<C-w>v", desc = "Split vertical" },
-				{ "<C-w>c", desc = "Close window" },
-				{ "<C-w>o", desc = "Close others" },
-				{ "<C-w>=", desc = "Equal size" },
+				{ "<C-w>", group = "window" },
+				{ "<C-w>h", desc = "Go to left window" },
+				{ "<C-w>j", desc = "Go to window below" },
+				{ "<C-w>k", desc = "Go to window above" },
+				{ "<C-w>l", desc = "Go to right window" },
+				{ "<C-w>w", desc = "Go to next window" },
+				{ "<C-w>s", desc = "Split window horizontally" },
+				{ "<C-w>v", desc = "Split window vertically" },
+				{ "<C-w>c", desc = "Close current window" },
+				{ "<C-w>o", desc = "Close other windows" },
+				{ "<C-w>q", desc = "Quit window" },
+				{ "<C-w>=", desc = "Make windows equal size" },
+				{ "<C-w>_", desc = "Maximize height" },
+				{ "<C-w>|", desc = "Maximize width" },
+				{ "<C-w>+", desc = "Increase height" },
+				{ "<C-w>-", desc = "Decrease height" },
+				{ "<C-w>>", desc = "Increase width" },
+				{ "<C-w><", desc = "Decrease width" },
+				{ "<C-w>T", desc = "Move window to new tab" },
+				{ "<C-w>r", desc = "Rotate windows" },
+				{ "<C-w>x", desc = "Exchange windows" },
+				{ "<C-w>p", desc = "Go to previous window" },
+				{ "<C-w>P", desc = "Go to preview window" },
 			})
 		end,
 	},
