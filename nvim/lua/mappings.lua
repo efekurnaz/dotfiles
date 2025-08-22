@@ -74,7 +74,8 @@ map('n', '<C-[>', ':GFiles?<CR>')
 map('n', '<C-E>', ':Rg<CR>')
 
 -- Modern file explorer with Neo-tree
-map('n', '<leader>e', ':Neotree focus<CR>', { desc = 'Focus file explorer' })
+-- Note: <leader>h is configured in plugins.lua with smart toggle behavior
+-- map('n', '<leader>h', ':Neotree focus<CR>', { desc = 'Toggle/Focus file explorer' })
 map('n', '<leader>fe', ':Neotree toggle<CR>', { desc = 'Toggle file explorer' })
 map('n', '<leader>fE', ':Neotree toggle float<CR>', { desc = 'Float file explorer' })
 
@@ -86,9 +87,24 @@ map('n', '<C-O>', ':Ex<CR>')               -- Built-in file explorer (shorter co
 -- =============================================================================
 -- Claude Code plugin keybindings are configured in plugins.lua
 -- Available commands:
--- <leader>j   - Toggle Claude Code terminal
+-- <leader>l   - Toggle Claude Code terminal
 -- <leader>cc  - Continue Claude conversation
 -- <leader>cr  - Resume Claude conversation picker
+
+-- =============================================================================
+-- WINDOW RESIZING
+-- =============================================================================
+-- Custom window resize with larger steps (5 instead of 1)
+map('n', '<C-w>>', '5<C-w>>', { desc = 'Increase window width by 5' })
+map('n', '<C-w><', '5<C-w><', { desc = 'Decrease window width by 5' })
+map('n', '<C-w>+', '5<C-w>+', { desc = 'Increase window height by 5' })
+map('n', '<C-w>-', '5<C-w>-', { desc = 'Decrease window height by 5' })
+
+-- Alternative: Use arrow keys with Ctrl+W for resizing
+map('n', '<C-w><Right>', '5<C-w>>', { desc = 'Increase width' })
+map('n', '<C-w><Left>', '5<C-w><', { desc = 'Decrease width' })
+map('n', '<C-w><Up>', '5<C-w>+', { desc = 'Increase height' })
+map('n', '<C-w><Down>', '5<C-w>-', { desc = 'Decrease height' })
 
 -- =============================================================================
 -- BUFFER NAVIGATION
@@ -490,7 +506,7 @@ Common workflow examples:
 1. File Navigation:
    - <C-P> to find and open files quickly
    - <C-E> to search for text across files
-   - <leader>e to focus file explorer
+   - <leader>h to toggle/focus file explorer (closes if already in explorer)
    - <leader>fe to toggle file explorer
    - In Neo-tree: ←/→ or h/l to collapse/expand folders
    - <C-K>/<C-J> to switch between open files
@@ -533,7 +549,7 @@ Common workflow examples:
    - <C-Space> to trigger completion
 
 8. Claude Code Integration:
-   - <leader>j to toggle Claude Code terminal
+   - <leader>l to toggle Claude Code terminal (closes if already in Claude)
    - <leader>cc to continue current Claude conversation
    - <leader>cr to resume a previous Claude conversation
    - <C-q> to quickly return focus to previous window from Claude terminal

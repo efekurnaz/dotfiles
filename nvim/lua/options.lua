@@ -43,6 +43,20 @@ opt.ignorecase = true          -- Ignore case when searching (case-insensitive b
 opt.smartcase = true           -- Override ignorecase if search contains uppercase letters
 
 -- =============================================================================
+-- WINDOW SEPARATORS
+-- =============================================================================
+-- Configure window separator appearance
+opt.fillchars = {
+  vert = '│',     -- Vertical separator character (no padding)
+  horiz = '─',    -- Horizontal separator
+  horizup = '┴',
+  horizdown = '┬',
+  vertleft = '┤',
+  vertright = '├',
+  verthoriz = '┼',
+}
+
+-- =============================================================================
 -- PERFORMANCE OPTIMIZATION
 -- =============================================================================
 -- Settings to improve Neovim's performance

@@ -120,6 +120,14 @@ require("lazy").setup({
 
 			-- Disable tmuxline integration
 			vim.g["airline#extensions#tmuxline#enabled"] = 1
+			
+			-- Disable airline for terminal buffers completely
+			vim.g["airline#extensions#term#enabled"] = 0
+			vim.g.airline_disable_statusline = 0
+			
+			-- Exclude terminal buffers from airline
+			vim.g.airline_exclude_filetypes = { 'terminal' }
+			vim.g.airline_exclude_preview = 1
 		end,
 		config = function()
 			-- Configure after plugin loads
@@ -226,7 +234,7 @@ require("lazy").setup({
 					"cssls",
 					"lua_ls",
 					"jsonls",
-					"bashls",
+					"bashls", -- Bash language server
 				},
 				automatic_installation = true,
 			})
@@ -576,40 +584,39 @@ require("lazy").setup({
 		keys = {
 			{
 				"<leader>fe",
-				function()
-					vim.g.neo_tree_intentional_focus = true
-					vim.cmd("Neotree toggle")
-				end,
+				"<cmd>Neotree toggle<cr>",
 				desc = "Explorer NeoTree (root dir)",
 			},
 			{
 				"<leader>fE",
-				function()
-					vim.g.neo_tree_intentional_focus = true
-					vim.cmd("Neotree toggle float")
-				end,
+				"<cmd>Neotree toggle float<cr>",
 				desc = "Explorer NeoTree (float)",
 			},
 			{
-				"<leader>e",
+				"<leader>h",
 				function()
-					vim.g.neo_tree_intentional_focus = true
-					vim.cmd("Neotree focus")
+					-- Check if current buffer is Neo-tree
+					if vim.bo.filetype == "neo-tree" then
+						vim.cmd("Neotree close")
+					else
+						vim.cmd("Neotree focus")
+					end
 				end,
-				desc = "Explorer NeoTree (focus)",
+				desc = "Toggle/Focus NeoTree",
 			},
 		},
 		deactivate = function()
 			vim.cmd([[Neotree close]])
 		end,
-		init = function()
-			if vim.fn.argc(-1) == 1 then
-				local stat = vim.loop.fs_stat(vim.fn.argv(0))
-				if stat and stat.type == "directory" then
-					require("neo-tree")
-				end
-			end
-		end,
+		-- Remove init function to prevent auto-opening on startup
+		-- init = function()
+		-- 	if vim.fn.argc(-1) == 1 then
+		-- 		local stat = vim.loop.fs_stat(vim.fn.argv(0))
+		-- 		if stat and stat.type == "directory" then
+		-- 			require("neo-tree")
+		-- 		end
+		-- 	end
+		-- end,
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			"nvim-tree/nvim-web-devicons",
@@ -627,34 +634,7 @@ require("lazy").setup({
 				retain_hidden_root_indent = false,
 				resize_timer_interval = 500, -- Delay between window resizes
 				auto_clean_after_session_restore = true,
-				event_handlers = {
-					-- Prevent Neo-tree from stealing focus when closing buffers
-					{
-						event = "neo_tree_buffer_enter",
-						handler = function()
-							-- If we have other windows with files, don't let Neo-tree keep focus
-							vim.defer_fn(function()
-								local wins = vim.api.nvim_list_wins()
-								for _, win in ipairs(wins) do
-									local buf = vim.api.nvim_win_get_buf(win)
-									local ft = vim.api.nvim_buf_get_option(buf, "filetype")
-									local bt = vim.api.nvim_buf_get_option(buf, "buftype")
-									-- If there's a regular file window, switch to it
-									if ft ~= "neo-tree" and bt == "" then
-										-- Only switch if Neo-tree has focus and we weren't intentionally focusing it
-										local current_ft = vim.bo.filetype
-										if current_ft == "neo-tree" and not vim.g.neo_tree_intentional_focus then
-											vim.api.nvim_set_current_win(win)
-											break
-										end
-									end
-								end
-								-- Reset the flag
-								vim.g.neo_tree_intentional_focus = false
-							end, 1)
-						end,
-					},
-				},
+				-- Removed problematic event_handlers that were preventing focus
 				default_component_configs = {
 					container = {
 						enable_character_fade = true,
@@ -995,6 +975,41 @@ require("lazy").setup({
 		end,
 	},
 
+	-- Sticky context bar showing current function/class/tag context
+	{
+		"nvim-treesitter/nvim-treesitter-context",
+		event = "BufRead",
+		dependencies = { "nvim-treesitter/nvim-treesitter" },
+		config = function()
+			require("treesitter-context").setup({
+				enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
+				max_lines = 3, -- How many lines the window should span. Values <= 0 mean no limit.
+				min_window_height = 0, -- Minimum editor window height to enable context. Values <= 0 mean no limit.
+				line_numbers = true,
+				multiline_threshold = 20, -- Maximum number of lines to show for a single context
+				trim_scope = "outer", -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
+				mode = "cursor", -- Line used to calculate context. Choices: 'cursor', 'topline'
+				-- Separator between context and content. Should be a single character string, like '-'.
+				-- When separator is set, the context will only show up when there are at least 2 lines above cursorline.
+				separator = nil,
+				zindex = 20, -- The Z-index of the context window
+				on_attach = nil, -- (fun(buf: integer): boolean) return false to disable attaching
+			})
+
+			-- Keymaps for context navigation
+			vim.keymap.set("n", "[c", function()
+				require("treesitter-context").go_to_context(vim.v.count1)
+			end, { silent = true, desc = "Jump to context (upwards)" })
+
+			-- Style the context bar to match Dracula theme
+			vim.cmd([[
+				hi TreesitterContext guibg=#454158 gui=italic
+				hi TreesitterContextLineNumber guifg=#7970a9 guibg=#454158
+				"hi TreesitterContextBottom gui=underline guisp=#454158
+			]])
+		end,
+	},
+
 	-- ==========================================================================
 	-- ADVANCED EDITING FEATURES
 	-- ==========================================================================
@@ -1088,16 +1103,16 @@ require("lazy").setup({
 			-- Set timeout options before setup
 			vim.o.timeout = true
 			vim.o.timeoutlen = 300
-			
+
 			local wk = require("which-key")
-			
+
 			-- Setup with some basic styling
 			wk.setup({
 				win = {
 					border = "rounded",
 				},
 			})
-			
+
 			-- Register leader groups
 			wk.add({
 				{ "<leader>", group = "Leader" },
@@ -1110,7 +1125,7 @@ require("lazy").setup({
 				{ "<leader>q", group = "Session" },
 				{ "<leader>t", group = "Terminal" },
 			})
-			
+
 			-- Register window commands
 			wk.add({
 				{ "<C-w>", group = "Window" },
@@ -1123,6 +1138,10 @@ require("lazy").setup({
 				{ "<C-w>c", desc = "Close window" },
 				{ "<C-w>o", desc = "Close others" },
 				{ "<C-w>=", desc = "Equal size" },
+				{ "<C-w>>", desc = "Width +5" },
+				{ "<C-w><", desc = "Width -5" },
+				{ "<C-w>+", desc = "Height +5" },
+				{ "<C-w>-", desc = "Height -5" },
 			})
 		end,
 	},
@@ -1503,7 +1522,21 @@ require("lazy").setup({
 		"greggh/claude-code.nvim",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		keys = {
-			{ "<leader>j", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude Code" },
+			{
+				"<leader>l",
+				function()
+					-- Check if current buffer is Claude Code terminal
+					local bufname = vim.api.nvim_buf_get_name(0)
+					if bufname:match("term://.*claude") then
+						-- We're in Claude, close it by going to previous window and closing Claude
+						vim.cmd("wincmd p")
+						vim.cmd("ClaudeCode")
+					else
+						vim.cmd("ClaudeCode")
+					end
+				end,
+				desc = "Toggle Claude Code",
+			},
 			{ "<leader>cc", "<cmd>ClaudeCodeContinue<cr>", desc = "Continue Claude conversation" },
 			{ "<leader>cr", "<cmd>ClaudeCodeResume<cr>", desc = "Resume Claude conversation" },
 		},
@@ -1516,21 +1549,45 @@ require("lazy").setup({
 			})
 
 			-- Exclude Claude Code terminal from buffer list and airline tabline
-			vim.api.nvim_create_autocmd({"TermOpen"}, {
-				pattern = "*claude*",
+			vim.api.nvim_create_autocmd({ "TermOpen", "BufEnter", "WinEnter" }, {
+				pattern = "*",
 				callback = function()
-					vim.bo.buflisted = false
-					vim.bo.bufhidden = "hide"
+					local bufname = vim.api.nvim_buf_get_name(0)
+					local buftype = vim.bo.buftype
 					
-					-- Add keybindings specifically for Claude Code terminal
-					local opts = { buffer = true, silent = true }
-					-- Use <C-q> to quickly return to previous window
-					vim.keymap.set('t', '<C-q>', [[<C-\><C-n><C-w>p]], opts)
+					-- More flexible matching for any buffer with "claude" in the name
+					if bufname:lower():match("claude") and buftype == "terminal" then
+						vim.bo.buflisted = false
+						vim.bo.bufhidden = "hide"
+
+						-- Add keybindings specifically for Claude Code terminal
+						local opts = { buffer = true, silent = true }
+						-- Use <C-q> to quickly return to previous window
+						vim.keymap.set("t", "<C-q>", [[<C-\><C-n><C-w>p]], opts)
+						
+						-- Override airline completely for this buffer
+						vim.defer_fn(function()
+							-- Clear all sections
+							vim.b.airline_section_a = 'Claude Code'
+							vim.b.airline_section_b = ''
+							vim.b.airline_section_c = ''
+							vim.b.airline_section_x = ''
+							vim.b.airline_section_y = ''
+							vim.b.airline_section_z = ''
+							vim.b.airline_section_warning = ''
+							vim.b.airline_section_error = ''
+							
+							-- Force airline to refresh
+							if vim.fn.exists(':AirlineRefresh') == 2 then
+								vim.cmd('AirlineRefresh!')
+							end
+						end, 200)
+					end
 				end,
 			})
 
 			-- Also configure airline to exclude Claude Code terminals
-			vim.g["airline#extensions#tabline#ignore_bufadd_pat"] = 'term://.*claude\\|Claude\\sCode'
+			vim.g["airline#extensions#tabline#ignore_bufadd_pat"] = "term://.*claude\\|Claude\\sCode"
 		end,
 	},
 

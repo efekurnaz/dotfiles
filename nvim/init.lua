@@ -49,6 +49,15 @@ require('plugins')
 -- 4. Load autocommands and file type associations (equivalent to the old functions.vim)
 require('autocmds')
 
+-- 5. Temporary debug helper for Claude
+require('claude-debug')
+
+-- 6. Custom airline override for Claude
+require('airline-claude').setup()
+
+-- 7. Terminal statusline override (disable airline for terminals)
+require('terminal-statusline').setup()
+
 -- =============================================================================
 -- CONFIGURATION STRUCTURE OVERVIEW
 -- =============================================================================
