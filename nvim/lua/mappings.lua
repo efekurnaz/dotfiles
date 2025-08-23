@@ -83,6 +83,33 @@ map('n', '<leader>fE', ':Neotree toggle float<CR>', { desc = 'Float file explore
 map('n', '<C-O>', ':Ex<CR>')               -- Built-in file explorer (shorter command)
 
 -- =============================================================================
+-- AIRLINE BRANCH DEBUGGING
+-- =============================================================================
+-- Manual airline branch refresh function
+map('n', '<leader>ab', function()
+  -- Check if airline is loaded
+  if vim.fn.exists(':AirlineRefresh') == 0 then
+    print('Airline not loaded yet')
+    return
+  end
+  
+  -- Initialize airline extensions if not already done
+  if vim.g.airline_extensions == nil then
+    vim.g.airline_extensions = {}
+  end
+  
+  -- Refresh airline components
+  vim.cmd('AirlineRefresh')
+  
+  -- Try to refresh branch extension safely
+  pcall(function()
+    vim.cmd('call airline#extensions#branch#init(g:airline_extensions)')
+  end)
+  
+  print('Airline branch refreshed')
+end, { desc = 'Refresh airline branch display' })
+
+-- =============================================================================
 -- CLAUDE CODE INTEGRATION
 -- =============================================================================
 -- Claude Code plugin keybindings are configured in plugins.lua

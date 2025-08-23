@@ -47,7 +47,7 @@ require("lazy").setup({
 	-- ==========================================================================
 
 	-- Git commands within Vim (:Git status, :Git commit, etc.)
-	{ "tpope/vim-fugitive", event = "BufRead" },
+	{ "tpope/vim-fugitive", lazy = false },
 
 	-- ==========================================================================
 	-- COLORSCHEME AND APPEARANCE
@@ -115,18 +115,20 @@ require("lazy").setup({
 
 			-- Enable git branch extension
 			vim.g["airline#extensions#branch#enabled"] = 1
-			vim.g["airline#extensions#branch#format"] = "{branch}"
+			vim.g["airline#extensions#branch#format"] = 2
+			vim.g["airline#extensions#branch#displayed_head_limit"] = 10
 			vim.g["airline#extensions#hunks#enabled"] = 1
+			vim.g["airline#extensions#branch#sha1_len"] = 8
 
 			-- Disable tmuxline integration
 			vim.g["airline#extensions#tmuxline#enabled"] = 1
-			
+
 			-- Disable airline for terminal buffers completely
 			vim.g["airline#extensions#term#enabled"] = 0
 			vim.g.airline_disable_statusline = 0
-			
+
 			-- Exclude terminal buffers from airline
-			vim.g.airline_exclude_filetypes = { 'terminal' }
+			vim.g.airline_exclude_filetypes = { "terminal" }
 			vim.g.airline_exclude_preview = 1
 		end,
 		config = function()
@@ -134,6 +136,10 @@ require("lazy").setup({
 			vim.defer_fn(function()
 				-- Set theme after plugin loads to avoid conflicts
 				vim.g.airline_theme = "dracula_pro"
+				
+				-- Force airline to detect git branch
+				vim.g["airline#extensions#branch#vcs_priority"] = {"git", "mercurial"}
+				vim.g["airline#extensions#branch#use_vcscommand"] = 0
 
 				-- Initialize airline symbols table
 				if not vim.g.airline_symbols then
@@ -158,6 +164,14 @@ require("lazy").setup({
 
 				-- Refresh airline to apply changes
 				vim.cmd("AirlineRefresh")
+				
+				-- Force airline to refresh branch detection safely
+				pcall(function()
+					if vim.g.airline_extensions == nil then
+						vim.g.airline_extensions = {}
+					end
+					vim.cmd("call airline#extensions#branch#init(g:airline_extensions)")
+				end)
 			end, 100)
 		end,
 	},
@@ -1554,7 +1568,7 @@ require("lazy").setup({
 				callback = function()
 					local bufname = vim.api.nvim_buf_get_name(0)
 					local buftype = vim.bo.buftype
-					
+
 					-- More flexible matching for any buffer with "claude" in the name
 					if bufname:lower():match("claude") and buftype == "terminal" then
 						vim.bo.buflisted = false
@@ -1564,22 +1578,22 @@ require("lazy").setup({
 						local opts = { buffer = true, silent = true }
 						-- Use <C-q> to quickly return to previous window
 						vim.keymap.set("t", "<C-q>", [[<C-\><C-n><C-w>p]], opts)
-						
+
 						-- Override airline completely for this buffer
 						vim.defer_fn(function()
 							-- Clear all sections
-							vim.b.airline_section_a = 'Claude Code'
-							vim.b.airline_section_b = ''
-							vim.b.airline_section_c = ''
-							vim.b.airline_section_x = ''
-							vim.b.airline_section_y = ''
-							vim.b.airline_section_z = ''
-							vim.b.airline_section_warning = ''
-							vim.b.airline_section_error = ''
-							
+							vim.b.airline_section_a = "Claude Code"
+							vim.b.airline_section_b = ""
+							vim.b.airline_section_c = ""
+							vim.b.airline_section_x = ""
+							vim.b.airline_section_y = ""
+							vim.b.airline_section_z = ""
+							vim.b.airline_section_warning = ""
+							vim.b.airline_section_error = ""
+
 							-- Force airline to refresh
-							if vim.fn.exists(':AirlineRefresh') == 2 then
-								vim.cmd('AirlineRefresh!')
+							if vim.fn.exists(":AirlineRefresh") == 2 then
+								vim.cmd("AirlineRefresh!")
 							end
 						end, 200)
 					end
