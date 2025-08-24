@@ -119,6 +119,10 @@ require("lazy").setup({
 			vim.g["airline#extensions#branch#displayed_head_limit"] = 10
 			vim.g["airline#extensions#hunks#enabled"] = 1
 			vim.g["airline#extensions#branch#sha1_len"] = 8
+			
+			-- Configure hunks display format
+			vim.g["airline#extensions#hunks#coc_git"] = 0
+			vim.g["airline#extensions#hunks#non_zero_only"] = 0
 
 			-- Disable tmuxline integration
 			vim.g["airline#extensions#tmuxline#enabled"] = 1
@@ -155,6 +159,14 @@ require("lazy").setup({
 				vim.g.airline_symbols.readonly = ""
 				vim.g.airline_symbols.linenr = ""
 				vim.g.airline_symbols.whitespace = "Ξ"
+				
+				-- Configure git status symbols
+				vim.g.airline_symbols.dirty = " ●"
+				vim.g.airline_symbols.clean = ""
+				
+				-- Configure git hunks symbols (detailed git status)
+				vim.g["airline#extensions#hunks#hunk_symbols"] = {"+", "~", "-"}
+				vim.g["airline#extensions#hunks#non_zero_only"] = 1
 
 				-- Tab separators - using the angled separators you want
 				vim.g["airline#extensions#tabline#left_sep"] = ""
