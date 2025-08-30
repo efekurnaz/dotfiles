@@ -38,3 +38,20 @@ user-dirs.locale
 vlc/
 xarchiver/
 github-copilot/
+
+# Claude specific - personal data
+.claude/.claude/todos/
+.claude/.claude/shell-snapshots/
+.claude/.claude/projects/
+.claude/.claude/statsig/
+.claude/.claude/downloads/
+.claude/.claude/.anthropic/
+.claude/.claude/SHOPIFY_WORKFLOW.md
+
+# Keep only general settings
+!.claude/.claude/agents/
+!.claude/.claude/commands/
+!.claude/.claude/rules/
+!.claude/.claude/settings.json
+!.claude/.claude/ide/
+!.claude/.claude/plugins/
