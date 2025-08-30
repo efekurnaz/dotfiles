@@ -1,0 +1,1125 @@
+---
+description: Professional JavaScript standards for Electric Maybe Shopify Theme. All JavaScript files must follow these patterns for consistency, performance, and maintainability.
+globs:
+  - "**/*.js"
+  - "sections/*.liquid"
+  - "snippets/*.liquid"
+alwaysApply: false
+---
+
+# JavaScript Development Standards
+
+## Core Principles
+
+- **Zero external dependencies** - Use native browser APIs
+- **Performance first** - Every operation should complete in < 16ms
+- **Accessibility always** - WCAG 2.1 AA compliance minimum
+- **Memory conscious** - Proper cleanup, no leaks
+- **Error resilient** - Graceful degradation with try-catch boundaries
+- **Documentation complete** - Every class, method, and complex operation documented
+
+## Web Component Standards
+
+### Class Structure Template
+
+```javascript
+/**
+ * ComponentName - Brief description of component purpose
+ * 
+ * Detailed description of functionality and usage patterns.
+ * 
+ * @example Basic usage
+ * <component-name data-option="value">
+ *   <div slot="content">Content here</div>
+ * </component-name>
+ * 
+ * @example Programmatic usage
+ * const component = document.querySelector('component-name');
+ * component.methodName(data);
+ */
+class ComponentName extends HTMLElement {
+  // Private fields - ALWAYS use # syntax
+  #isConnected = false;
+  #observer = null;
+  #abortController = null;
+  #cache = new Map();
+  #state = {
+    isLoading: false,
+    hasError: false
+  };
+  
+  // Constants
+  static #ANIMATION_DURATION = 300;
+  static #DEBOUNCE_DELAY = 150;
+  
+  // Static observed attributes
+  static observedAttributes = ['data-option', 'disabled'];
+  
+  constructor() {
+    super();
+    
+    // Bind event handlers in constructor
+    this.#handleClick = this.#handleClick.bind(this);
+    this.#handleScroll = this.#handleScroll.bind(this);
+  }
+  
+  connectedCallback() {
+    // Prevent duplicate initialization
+    if (this.#isConnected) return;
+    
+    try {
+      this.#setupDOM();
+      this.#setupEventListeners();
+      this.#initialize();
+      this.#isConnected = true;
+      
+      // Dispatch ready event
+      this.dispatchEvent(new CustomEvent('component:ready', {
+        detail: { component: this },
+        bubbles: true
+      }));
+    } catch (error) {
+      console.error('ComponentName: Error in connectedCallback', error);
+      this.#handleError(error);
+    }
+  }
+  
+  disconnectedCallback() {
+    if (!this.#isConnected) return;
+    
+    try {
+      this.#cleanup();
+      this.#isConnected = false;
+    } catch (error) {
+      console.error('ComponentName: Error in disconnectedCallback', error);
+    }
+  }
+  
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) return;
+    
+    switch(name) {
+      case 'data-option':
+        this.#handleOptionChange(newValue);
+        break;
+      case 'disabled':
+        this.#handleDisabledChange(newValue !== null);
+        break;
+    }
+  }
+  
+  // Public API methods
+  /**
+   * Public method description
+   * @param {Object} data - Parameter description
+   * @returns {Promise<void>}
+   * @throws {Error} When validation fails
+   */
+  async publicMethod(data) {
+    if (!this.#validateData(data)) {
+      throw new Error('Invalid data provided');
+    }
+    
+    try {
+      await this.#performAction(data);
+    } catch (error) {
+      console.error('ComponentName: Error in publicMethod', error);
+      throw error;
+    }
+  }
+  
+  // Private methods - ALWAYS use # syntax
+  #setupDOM() {
+    // Cache DOM references
+    this.#elements = {
+      button: this.querySelector('[data-action]'),
+      content: this.querySelector('[data-content]')
+    };
+  }
+  
+  #setupEventListeners() {
+    // Use AbortController for cleanup
+    this.#abortController = new AbortController();
+    const { signal } = this.#abortController;
+    
+    // Passive listeners for scroll/touch
+    window.addEventListener('scroll', this.#handleScroll, { 
+      passive: true, 
+      signal 
+    });
+    
+    // Regular listeners
+    this.addEventListener('click', this.#handleClick, { signal });
+  }
+  
+  #cleanup() {
+    // Abort all listeners
+    this.#abortController?.abort();
+    
+    // Clear observers
+    this.#observer?.disconnect();
+    
+    // Clear timeouts
+    clearTimeout(this.#timeout);
+    
+    // Clear cache
+    this.#cache.clear();
+    
+    // Reset state
+    this.#state = {
+      isLoading: false,
+      hasError: false
+    };
+  }
+  
+  // Event handlers
+  #handleClick(event) {
+    // Implementation
+  }
+  
+  #handleScroll(event) {
+    // Throttled/debounced implementation
+  }
+  
+  // Utility methods
+  #validateData(data) {
+    return data && typeof data === 'object';
+  }
+  
+  #handleError(error) {
+    this.#state.hasError = true;
+    this.dispatchEvent(new CustomEvent('component:error', {
+      detail: { error, component: this },
+      bubbles: true
+    }));
+  }
+  
+  // Static utility methods
+  /**
+   * Find component by selector
+   * @param {string} selector - CSS selector
+   * @returns {ComponentName|null}
+   */
+  static find(selector) {
+    return document.querySelector(selector);
+  }
+  
+  /**
+   * Find all components
+   * @returns {NodeList}
+   */
+  static findAll() {
+    return document.querySelectorAll('component-name');
+  }
+}
+
+// Register with safety check
+if (!customElements.get('component-name')) {
+  customElements.define('component-name', ComponentName);
+}
+
+// Module export support
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = ComponentName;
+}
+```
+
+## Performance Patterns
+
+### Debouncing & Throttling
+
+```javascript
+// Debounce for input/resize
+#debounce(func, delay) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+
+// Throttle for scroll/mousemove
+#throttle(func, limit) {
+  let inThrottle;
+  return (...args) => {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
+// Usage
+this.#debouncedSearch = this.#debounce(this.#search.bind(this), 300);
+this.#throttledScroll = this.#throttle(this.#handleScroll.bind(this), 100);
+```
+
+### RequestAnimationFrame
+
+```javascript
+// Smooth animations
+#animate() {
+  if (this.#rafId) {
+    cancelAnimationFrame(this.#rafId);
+  }
+  
+  this.#rafId = requestAnimationFrame(() => {
+    // Perform DOM updates
+    this.#updatePosition();
+    
+    // Continue animation if needed
+    if (this.#shouldContinue) {
+      this.#animate();
+    }
+  });
+}
+```
+
+### Intersection Observer
+
+```javascript
+#setupObserver() {
+  const options = {
+    root: null,
+    rootMargin: '50px',
+    threshold: [0, 0.5, 1]
+  };
+  
+  this.#observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        this.#handleVisible(entry.target);
+      }
+    });
+  }, options);
+  
+  this.#observer.observe(this);
+}
+```
+
+## Memory Management
+
+### AbortController Pattern
+
+```javascript
+#setupEventListeners() {
+  // Create controller for this component
+  this.#abortController = new AbortController();
+  const { signal } = this.#abortController;
+  
+  // All listeners use the same signal
+  window.addEventListener('resize', this.#handleResize, { signal });
+  document.addEventListener('click', this.#handleClick, { signal });
+  
+  // Cleanup in disconnectedCallback
+  this.#abortController?.abort();
+}
+```
+
+### WeakMap for External References
+
+```javascript
+class ComponentManager {
+  // Use WeakMap for external object references
+  #cache = new WeakMap();
+  
+  #storeData(element, data) {
+    this.#cache.set(element, data);
+  }
+  
+  #getData(element) {
+    return this.#cache.get(element);
+  }
+}
+```
+
+## Error Handling
+
+### Try-Catch Boundaries
+
+```javascript
+async #fetchData(url) {
+  try {
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('ComponentName: Fetch error', error);
+    
+    // Dispatch error event
+    this.dispatchEvent(new CustomEvent('component:error', {
+      detail: { error, operation: 'fetch' },
+      bubbles: true
+    }));
+    
+    // Return fallback
+    return null;
+  }
+}
+```
+
+### Validation Guards
+
+```javascript
+#processData(data) {
+  // Early validation
+  if (!data || typeof data !== 'object') {
+    console.warn('ComponentName: Invalid data provided');
+    return;
+  }
+  
+  // Type checking
+  if (!Array.isArray(data.items)) {
+    console.warn('ComponentName: Expected items array');
+    return;
+  }
+  
+  // Safe processing
+  data.items.forEach(item => {
+    try {
+      this.#processItem(item);
+    } catch (error) {
+      console.error('ComponentName: Error processing item', error);
+      // Continue processing other items
+    }
+  });
+}
+```
+
+## Accessibility Requirements
+
+### ARIA Attributes
+
+```javascript
+#setupAccessibility() {
+  // Set role if needed
+  if (!this.hasAttribute('role')) {
+    this.setAttribute('role', 'region');
+  }
+  
+  // Set aria-label or aria-labelledby
+  if (!this.hasAttribute('aria-label')) {
+    const label = this.querySelector('[data-label]');
+    if (label) {
+      label.id = label.id || `label-${Date.now()}`;
+      this.setAttribute('aria-labelledby', label.id);
+    }
+  }
+  
+  // Live regions for updates
+  this.#announcer = document.createElement('div');
+  this.#announcer.setAttribute('aria-live', 'polite');
+  this.#announcer.setAttribute('aria-atomic', 'true');
+  this.#announcer.className = 'sr-only';
+  this.appendChild(this.#announcer);
+}
+
+#announce(message) {
+  if (this.#announcer) {
+    this.#announcer.textContent = message;
+  }
+}
+```
+
+### Focus Management
+
+```javascript
+#trapFocus() {
+  const focusableElements = this.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+  
+  this.#focusTrap = (event) => {
+    if (event.key !== 'Tab') return;
+    
+    if (event.shiftKey) {
+      if (document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      }
+    } else {
+      if (document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    }
+  };
+  
+  this.addEventListener('keydown', this.#focusTrap);
+}
+```
+
+## Async Operations
+
+### Fetch with AbortController
+
+```javascript
+async #fetchWithTimeout(url, timeout = 5000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout');
+    }
+    throw error;
+  }
+}
+```
+
+### Promise Queue
+
+```javascript
+class QueuedComponent extends HTMLElement {
+  #queue = [];
+  #processing = false;
+  
+  async #addToQueue(task) {
+    this.#queue.push(task);
+    
+    if (!this.#processing) {
+      this.#processQueue();
+    }
+  }
+  
+  async #processQueue() {
+    this.#processing = true;
+    
+    while (this.#queue.length > 0) {
+      const task = this.#queue.shift();
+      try {
+        await task();
+      } catch (error) {
+        console.error('QueuedComponent: Task error', error);
+      }
+    }
+    
+    this.#processing = false;
+  }
+}
+```
+
+## URL Manipulation
+
+### Always use URL and URLSearchParams APIs
+
+```javascript
+// Good - Type-safe URL manipulation
+const updateFilters = (filters) => {
+  const url = new URL(window.location.href);
+  
+  for (const [key, value] of Object.entries(filters)) {
+    if (value) {
+      url.searchParams.set(key, value);
+    } else {
+      url.searchParams.delete(key);
+    }
+  }
+  
+  return url;
+};
+
+// Navigation with proper state management
+const navigateToFilters = (filters) => {
+  const url = updateFilters(filters);
+  const params = url.searchParams.toString();
+  
+  history.pushState({ urlParameters: params }, '', url.toString());
+  updateProductGrid(url.searchParams);
+};
+```
+
+## Event-Driven Architecture
+
+### Custom Events with Typed Details
+
+```javascript
+/**
+ * @typedef {Object} ComponentEventDetail
+ * @property {string} action - Action performed
+ * @property {Object} data - Associated data
+ * @property {number} timestamp - Event timestamp
+ */
+
+// Dispatch typed event
+const event = new CustomEvent('component:action', {
+  detail: {
+    action: 'update',
+    data: { id: 123, value: 'test' },
+    timestamp: Date.now()
+  },
+  bubbles: true,
+  cancelable: true
+});
+
+this.dispatchEvent(event);
+
+// Listen with type safety
+element.addEventListener('component:action', (event) => {
+  const { action, data, timestamp } = event.detail;
+  // Handle event
+});
+```
+
+## Documentation Standards
+
+### JSDoc Requirements
+
+```javascript
+/**
+ * ComponentName - One line description
+ * 
+ * Detailed multi-line description explaining:
+ * - Primary purpose
+ * - Key features
+ * - Usage patterns
+ * 
+ * @fires component:ready - When component initialization completes
+ * @fires component:error - When an error occurs
+ * 
+ * @example Basic usage
+ * <component-name data-option="value">
+ *   Content
+ * </component-name>
+ * 
+ * @example JavaScript API
+ * const component = document.querySelector('component-name');
+ * await component.loadData({ id: 123 });
+ */
+
+/**
+ * Method description
+ * @param {string} name - Parameter description
+ * @param {Object} [options] - Optional parameter
+ * @param {boolean} [options.cache=true] - Option description
+ * @returns {Promise<Object>} Return value description
+ * @throws {TypeError} When name is not a string
+ * @throws {Error} When network request fails
+ * @private
+ */
+```
+
+## Browser Compatibility
+
+### Feature Detection
+
+```javascript
+class CompatibleComponent extends HTMLElement {
+  #supportsIntersectionObserver = 'IntersectionObserver' in window;
+  #supportsWebAnimations = 'animate' in Element.prototype;
+  
+  #animate(element, keyframes, options) {
+    if (this.#supportsWebAnimations) {
+      return element.animate(keyframes, options);
+    } else {
+      // Fallback to CSS transitions
+      element.style.transition = `all ${options.duration}ms`;
+      Object.assign(element.style, keyframes[keyframes.length - 1]);
+    }
+  }
+}
+```
+
+## Code Style Guidelines
+
+### General Patterns
+
+- **Avoid mutation** - Use `const` over `let` unless necessary
+- **Use `for...of`** over `forEach()` for better performance
+- **Early returns** over nested conditionals
+- **Async/await** over Promise chains
+- **Optional chaining** for safe property access
+- **Nullish coalescing** for default values
+
+```javascript
+// Good patterns
+const processItems = async (items) => {
+  if (!items?.length) return [];
+  
+  const results = [];
+  for (const item of items) {
+    const processed = await processItem(item);
+    results.push(processed);
+  }
+  
+  return results;
+};
+
+// Avoid
+const processItems = (items) => {
+  return new Promise((resolve) => {
+    if (items && items.length > 0) {
+      const results = [];
+      items.forEach((item) => {
+        processItem(item).then((processed) => {
+          results.push(processed);
+        });
+      });
+      resolve(results);
+    } else {
+      resolve([]);
+    }
+  });
+};
+```
+
+## Testing Considerations
+
+### Testable Structure
+
+```javascript
+class TestableComponent extends HTMLElement {
+  // Expose state for testing (dev only)
+  get testState() {
+    if (process.env.NODE_ENV === 'development') {
+      return { ...this.#state };
+    }
+    return null;
+  }
+  
+  // Static test utilities
+  static #testUtils = {
+    resetAll() {
+      document.querySelectorAll('testable-component').forEach(c => c.reset());
+    },
+    
+    findByAttribute(attr, value) {
+      return document.querySelector(`testable-component[${attr}="${value}"]`);
+    }
+  };
+  
+  static get testUtils() {
+    if (process.env.NODE_ENV === 'development') {
+      return this.#testUtils;
+    }
+    return null;
+  }
+}
+```
+
+## Layout/Reflow Performance Optimization
+
+### Understanding Layout Thrashing
+
+**Layout thrashing (forced synchronous layout) is a major performance bottleneck that occurs when JavaScript repeatedly reads and writes DOM properties that trigger layout recalculation.**
+
+When you read certain DOM properties or call specific methods, the browser must synchronously calculate styles and layout if the DOM has been modified. This forces the browser to:
+1. Recalculate styles (if invalidated)
+2. Recompute layout/reflow
+3. Update the render tree
+4. Potentially repaint affected areas
+
+### Operations That Force Layout/Reflow
+
+**Element Box Metrics (Always trigger reflow when read):**
+```javascript
+// ❌ These properties force layout when read:
+element.offsetLeft, element.offsetTop, element.offsetWidth, element.offsetHeight
+element.offsetParent
+element.clientLeft, element.clientTop, element.clientWidth, element.clientHeight
+element.getClientRects(), element.getBoundingClientRect()
+```
+
+**Scroll Properties:**
+```javascript
+// ❌ Reading or setting these forces layout:
+element.scrollWidth, element.scrollHeight
+element.scrollLeft, element.scrollTop  // Also when setting
+element.scrollBy(), element.scrollTo()
+element.scrollIntoView(), element.scrollIntoViewIfNeeded()
+```
+
+**Window Dimensions:**
+```javascript
+// ❌ These force layout:
+window.scrollX, window.scrollY
+window.innerHeight, window.innerWidth
+window.visualViewport.height, window.visualViewport.width
+window.visualViewport.offsetTop, window.visualViewport.offsetLeft
+```
+
+**Other Common Triggers:**
+```javascript
+// ❌ These also force layout:
+element.focus()  // Needs to check if element is rendered
+element.innerText  // Needs layout for line breaks
+element.computedRole, element.computedName
+document.elementFromPoint()
+
+// getComputedStyle() forces layout for:
+// - Elements in shadow DOM
+// - When viewport media queries exist
+// - For layout-dependent properties (width, height, top, left, etc.)
+window.getComputedStyle(element).width  // Forces layout
+window.getComputedStyle(element).color  // May not force layout
+
+// Form elements
+inputElement.select(), textareaElement.select()
+
+// Mouse event properties
+mouseEvent.layerX, mouseEvent.layerY
+mouseEvent.offsetX, mouseEvent.offsetY
+```
+
+### Best Practices to Avoid Layout Thrashing
+
+#### 1. Batch DOM Reads and Writes
+
+**❌ BAD: Interleaving reads and writes (causes layout thrashing)**
+```javascript
+// This causes 3 layouts!
+elements.forEach(el => {
+  el.style.left = el.offsetLeft + 10 + 'px';  // Read then write
+  el.style.top = el.offsetTop + 10 + 'px';    // Read then write
+  el.style.width = el.offsetWidth + 10 + 'px'; // Read then write
+});
+```
+
+**✅ GOOD: Batch all reads, then all writes**
+```javascript
+// Read phase - get all measurements first
+const measurements = elements.map(el => ({
+  left: el.offsetLeft,
+  top: el.offsetTop,
+  width: el.offsetWidth
+}));
+
+// Write phase - apply all changes
+elements.forEach((el, i) => {
+  el.style.left = measurements[i].left + 10 + 'px';
+  el.style.top = measurements[i].top + 10 + 'px';
+  el.style.width = measurements[i].width + 10 + 'px';
+});
+```
+
+#### 2. Use requestAnimationFrame for Visual Updates
+
+**✅ Schedule layout-affecting changes at the optimal time:**
+```javascript
+/**
+ * Batch DOM updates in animation frame
+ * @private
+ */
+#scheduleUpdate() {
+  if (this.#rafId) return;
+  
+  this.#rafId = requestAnimationFrame(() => {
+    // Read phase - at the very start of rAF
+    const scrollTop = window.scrollY;
+    const viewportHeight = window.innerHeight;
+    const elementRect = this.getBoundingClientRect();
+    
+    // Write phase - after all reads
+    this.style.transform = `translateY(${scrollTop * 0.5}px)`;
+    this.classList.toggle('in-view', elementRect.top < viewportHeight);
+    
+    this.#rafId = null;
+  });
+}
+```
+
+#### 3. Use CSS for Animations When Possible
+
+**✅ Prefer CSS transforms and opacity (don't trigger layout):**
+```javascript
+// ❌ BAD: Animating layout properties
+element.style.left = x + 'px';
+element.style.top = y + 'px';
+element.style.width = width + 'px';
+
+// ✅ GOOD: Use transforms (compositor-only)
+element.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+element.style.opacity = opacity;
+```
+
+#### 4. Cache Layout Values
+
+**✅ Store frequently accessed layout values:**
+```javascript
+class Component extends HTMLElement {
+  #cachedDimensions = null;
+  #resizeObserver = null;
+  
+  /**
+   * Get cached dimensions or calculate if needed
+   * @returns {Object} Element dimensions
+   * @private
+   */
+  #getDimensions() {
+    if (!this.#cachedDimensions) {
+      this.#cachedDimensions = {
+        width: this.offsetWidth,
+        height: this.offsetHeight,
+        top: this.offsetTop,
+        left: this.offsetLeft
+      };
+    }
+    return this.#cachedDimensions;
+  }
+  
+  /**
+   * Set up resize observer to invalidate cache
+   * @private
+   */
+  #setupResizeObserver() {
+    this.#resizeObserver = new ResizeObserver(() => {
+      this.#cachedDimensions = null;  // Invalidate cache
+    });
+    this.#resizeObserver.observe(this);
+  }
+}
+```
+
+#### 5. Use Document Fragments for Multiple DOM Insertions
+
+**✅ Build DOM off-screen, then insert once:**
+```javascript
+/**
+ * Add multiple items efficiently
+ * @param {Array} items - Items to add
+ * @private
+ */
+#addMultipleItems(items) {
+  // ❌ BAD: Multiple reflows
+  // items.forEach(item => {
+  //   const el = document.createElement('div');
+  //   el.textContent = item;
+  //   container.appendChild(el);  // Triggers reflow each time
+  // });
+  
+  // ✅ GOOD: Single reflow
+  const fragment = document.createDocumentFragment();
+  items.forEach(item => {
+    const el = document.createElement('div');
+    el.textContent = item;
+    fragment.appendChild(el);  // No reflow
+  });
+  container.appendChild(fragment);  // Single reflow
+}
+```
+
+#### 6. Use CSS contain Property
+
+**✅ Limit layout recalculation scope:**
+```css
+/* Limit layout recalculation to this element */
+.component {
+  contain: layout style paint;
+}
+
+/* For scrollable areas */
+.scroll-container {
+  contain: strict;
+  content-visibility: auto;
+}
+```
+
+#### 7. Avoid Layout in Loops
+
+**✅ Move layout queries outside loops:**
+```javascript
+/**
+ * Process visible elements efficiently
+ * @private
+ */
+#processVisibleElements() {
+  // ❌ BAD: Layout query in loop condition
+  // for (let i = 0; i < elements.length && window.scrollY < 1000; i++) {
+  //   // scrollY forces layout each iteration
+  // }
+  
+  // ✅ GOOD: Query once before loop
+  const scrollY = window.scrollY;
+  const viewportHeight = window.innerHeight;
+  
+  for (let i = 0; i < elements.length && scrollY < 1000; i++) {
+    // Process without additional layout queries
+  }
+}
+```
+
+### FastDOM Pattern Implementation
+
+**Implement a queue system for DOM operations:**
+```javascript
+/**
+ * DOM operation queue to batch reads and writes
+ * @private
+ */
+class DOMQueue {
+  #reads = [];
+  #writes = [];
+  #scheduled = false;
+  
+  /**
+   * Queue a read operation
+   * @param {Function} fn - Read function
+   * @returns {Promise}
+   */
+  read(fn) {
+    return new Promise(resolve => {
+      this.#reads.push(() => resolve(fn()));
+      this.#scheduleFlush();
+    });
+  }
+  
+  /**
+   * Queue a write operation
+   * @param {Function} fn - Write function
+   * @returns {Promise}
+   */
+  write(fn) {
+    return new Promise(resolve => {
+      this.#writes.push(() => resolve(fn()));
+      this.#scheduleFlush();
+    });
+  }
+  
+  /**
+   * Schedule queue flush
+   * @private
+   */
+  #scheduleFlush() {
+    if (this.#scheduled) return;
+    this.#scheduled = true;
+    
+    requestAnimationFrame(() => {
+      this.#flush();
+    });
+  }
+  
+  /**
+   * Flush the queue - reads first, then writes
+   * @private
+   */
+  #flush() {
+    const reads = this.#reads.splice(0);
+    const writes = this.#writes.splice(0);
+    
+    // Execute all reads
+    reads.forEach(read => read());
+    
+    // Then execute all writes
+    writes.forEach(write => write());
+    
+    this.#scheduled = false;
+    
+    // Schedule another flush if needed
+    if (this.#reads.length || this.#writes.length) {
+      this.#scheduleFlush();
+    }
+  }
+}
+
+// Usage example
+const domQueue = new DOMQueue();
+
+// Queue operations
+await domQueue.read(() => {
+  this.#width = element.offsetWidth;
+});
+
+await domQueue.write(() => {
+  element.style.width = this.#width + 10 + 'px';
+});
+```
+
+### Performance Monitoring
+
+**Monitor and log layout thrashing in development:**
+```javascript
+/**
+ * Monitor layout performance in development
+ * @private
+ */
+#monitorLayoutPerformance() {
+  if (process.env.NODE_ENV === 'development') {
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (entry.entryType === 'measure') {
+          if (entry.duration > 16) {  // Longer than one frame
+            console.warn(`Slow layout operation: ${entry.name} took ${entry.duration}ms`);
+          }
+        }
+      }
+    });
+    
+    observer.observe({ entryTypes: ['measure'] });
+  }
+}
+```
+
+### Summary of Layout/Reflow Rules
+
+1. **Never read layout properties immediately after writing** - This forces synchronous layout
+2. **Batch all DOM reads before any DOM writes** - Use the read-write-read-write pattern
+3. **Use requestAnimationFrame** for visual updates that affect layout
+4. **Cache layout values** when they don't change frequently
+5. **Prefer CSS transforms and opacity** for animations (compositor-only properties)
+6. **Use will-change sparingly** to hint at upcoming changes
+7. **Avoid layout queries in loops** - Query once before the loop
+8. **Use ResizeObserver/IntersectionObserver** instead of polling dimensions
+9. **Build complex DOM structures off-screen** using DocumentFragment
+10. **Monitor performance** using Performance Observer API
+
+**Remember: The key to avoiding layout thrashing is to minimize the number of times the browser must recalculate layout. Every time you force layout, you're potentially blocking the main thread and degrading user experience.**
+
+## Code Review Checklist
+
+When reviewing JavaScript code, ensure:
+
+- [ ] Class extends HTMLElement with proper lifecycle
+- [ ] Private fields use # syntax (not _ or private)
+- [ ] Event handlers bound in constructor
+- [ ] Connected/disconnected callbacks have guards
+- [ ] Try-catch blocks around critical operations
+- [ ] Memory cleanup in disconnectedCallback
+- [ ] AbortController for event listeners
+- [ ] Passive option for scroll/touch events
+- [ ] RequestAnimationFrame for animations
+- [ ] Debounce/throttle for expensive operations
+- [ ] JSDoc comments on all public methods
+- [ ] Custom events with proper detail objects
+- [ ] ARIA attributes for accessibility
+- [ ] Error events dispatched to parent
+- [ ] Static utility methods for querying
+- [ ] Module export support
+- [ ] Performance measurements for slow operations
+- [ ] Validation guards on public methods
+- [ ] Graceful degradation for missing features
+- [ ] No console.log in production code
+
+## Reference Implementation
+
+Use `_scripts/electric-modal.js` as the gold standard reference for all web component implementations in this project.
+
+## Performance Targets
+
+- Component initialization: < 16ms
+- Event handler execution: < 8ms  
+- Animation frame: < 16ms (60fps)
+- Memory: No detectable leaks
+- Network requests: < 3 seconds with timeout

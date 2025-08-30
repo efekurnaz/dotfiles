@@ -1,0 +1,473 @@
+# Tailwind CSS Development Rules
+
+## Core Principles
+
+### 1. Static Class Generation
+**CRITICAL**: Never combine Tailwind classes with Liquid variables or dynamic values.
+
+**Why this matters:**
+- Tailwind CSS scans unparsed files during build time to generate CSS
+- Liquid parsing happens on Shopify servers, not during local builds
+- Tailwind cannot see the final rendered HTML with dynamic values
+- This means dynamic classes like `duration-{{ animation_duration }}` will NOT work
+
+**❌ Bad Examples:**
+```liquid
+<!-- These will NOT work - Tailwind can't see the dynamic values -->
+<div class="duration-{{ animation_duration }}">
+<div class="w-{{ width }}">
+<div class="text-{{ color }}">
+<div class="bg-{{ background_color }}">
+```
+
+**✅ Good Examples:**
+```liquid
+<!-- Use static Tailwind classes -->
+<div class="duration-300">
+<div class="w-full">
+<div class="text-blue-600">
+<div class="bg-gray-100">
+
+<!-- Or use conditional classes -->
+<div class="{% if show_animation %}duration-300{% else %}duration-0{% endif %}">
+<div class="{% if size == 'sm' %}w-1/2{% else %}w-full{% endif %}">
+```
+
+### 2. Conditional Class Application
+Use conditional statements to apply different static classes:
+
+```liquid
+<!-- ✅ Good: Conditional static classes -->
+<div class="{% if expanded %}bg-blue-100{% else %}bg-gray-50{% endif %}">
+<div class="{% if size == 'sm' %}text-sm{% else %}text-base{% endif %}">
+<div class="{% if show_animation %}transition-all duration-300{% else %}transition-none{% endif %}">
+```
+
+### 3. Custom CSS for Dynamic Values
+For truly dynamic values, use custom CSS classes:
+
+```liquid
+<!-- ✅ Good: Custom CSS for dynamic values -->
+<style>
+  .duration-custom { transition-duration: var(--custom-duration); }
+  .width-custom { width: var(--custom-width); }
+</style>
+
+<div class="duration-custom" style="--custom-duration: {{ animation_duration }}ms">
+<div class="width-custom" style="--custom-width: {{ width }}%">
+```
+
+## Class Organization
+
+### 1. Logical Grouping
+Group related classes together in a logical order:
+
+```liquid
+<!-- ✅ Good: Logical grouping -->
+<div class="
+  flex items-center justify-between
+  p-4 m-2
+  bg-white border border-gray-200 rounded-lg
+  hover:bg-gray-50 focus:ring-2 focus:ring-blue-500
+  transition-colors duration-200
+">
+```
+
+### 2. Responsive Design
+Use responsive prefixes consistently:
+
+```liquid
+<!-- ✅ Good: Responsive design -->
+<div class="
+  w-full md:w-1/2 lg:w-1/3
+  text-sm md:text-base lg:text-lg
+  p-2 md:p-4 lg:p-6
+">
+```
+
+### 3. State Classes
+Group state-based classes together:
+
+```liquid
+<!-- ✅ Good: State classes grouped -->
+<button class="
+  px-4 py-2 rounded
+  bg-blue-600 text-white
+  hover:bg-blue-700 focus:bg-blue-700
+  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+  disabled:opacity-50 disabled:cursor-not-allowed
+  transition-colors duration-200
+">
+```
+
+## Performance Best Practices
+
+### 1. Content Source Configuration
+The project uses `_styles/main.css` for Tailwind configuration with content sources:
+
+```css
+/* _styles/main.css */
+@import 'tailwindcss' source(none);
+@source "../assets/*.js";
+@source "../assets/!(style).css";
+@source "../layout/*.liquid";
+@source "../sections/*.liquid";
+@source "../snippets/_*.liquid";
+@source "../snippets/a-*.liquid";
+@source "../snippets/m-*.liquid";
+@source "../snippets/hea*.liquid";
+@source "../snippets/pro*.liquid";
+@source "../templates/*.liquid";
+@plugin "@tailwindcss/typography";
+```
+
+**Important**: All template files must be included in the `@source` directives for proper class purging.
+
+### 2. Avoid Arbitrary Values
+Prefer predefined Tailwind classes over arbitrary values:
+
+```liquid
+<!-- ❌ Bad: Arbitrary values -->
+<div class="w-[123px] h-[456px]">
+
+<!-- ✅ Good: Predefined classes -->
+<div class="w-32 h-40">
+```
+
+### 3. Use CSS Custom Properties
+For dynamic values, use CSS custom properties defined in the theme:
+
+```css
+/* _styles/main.css */
+@theme {
+  --color-primary: hsl(220 13 18);
+  --color-secondary: hsl(0 0 97);
+  --font-body: var(--font-body-family);
+  --font-heading: var(--font-heading-family);
+}
+```
+
+## Color System
+
+### 1. Color Primitives
+Each project may have its own custom color system defined in `_styles/main.css`. Check the project's color primitives:
+
+```css
+/* Example color primitives (varies per project) */
+@theme {
+  /* Color Primitives */
+  --color-black: hsl(0 0 0);
+  --color-white: hsl(0 0 100);
+  --color-neutral-100: hsl(0 0 97);
+  --color-neutral-500: hsl(0 1 83);
+  --color-neutral-900: hsl(30 3 13);
+  /* ... other project-specific colors */
+}
+```
+
+### 2. Color Tokens
+Use semantic color tokens for consistent theming (naming may vary per project):
+
+```css
+/* Example semantic color tokens (varies per project) */
+@theme {
+  /* Background Colors */
+  --background-color-primary: var(--color-white);
+  --background-color-minimal: var(--color-neutral-100);
+  --background-color-contrast: var(--color-neutral-900);
+
+  /* Text Colors */
+  --text-color-primary: var(--color-neutral-900);
+  --text-color-secondary: var(--color-neutral-800);
+  --text-color-contrast: var(--color-white);
+  --text-color-muted: var(--color-neutral-700);
+
+  /* Border Colors */
+  --border-color-primary: var(--color-neutral-900);
+  --border-color-secondary: var(--color-neutral-500);
+
+  /* Fill Colors */
+  --fill-color-primary: var(--color-neutral-900);
+  --fill-color-contrast: var(--color-white);
+}
+```
+
+### 3. Using Theme Colors
+Apply theme colors using CSS custom properties (adapt to project's naming):
+
+```liquid
+<!-- Use theme background colors (adapt class names to project) -->
+<div class="bg-[hsl(var(--background-color-primary))]">
+<div class="bg-[hsl(var(--background-color-minimal))]">
+
+<!-- Use theme text colors (adapt class names to project) -->
+<div class="text-[hsl(var(--text-color-primary))]">
+<div class="text-[hsl(var(--text-color-muted))]">
+
+<!-- Use theme border colors (adapt class names to project) -->
+<div class="border-[hsl(var(--border-color-secondary))]">
+```
+
+### 4. Project-Specific Color Classes
+Some projects may define custom Tailwind classes for their color system:
+
+```liquid
+<!-- Example: Project may have custom classes like these -->
+<div class="bg-primary text-contrast border-secondary">
+<div class="bg-minimal text-muted">
+<div class="hover:bg-minimal focus:bg-minimal">
+```
+
+**Important**: Always check the project's `_styles/main.css` file to understand the specific color system and naming conventions used in that project.
+
+## Design-Focused Accessibility
+
+### 1. Contextual Focus States
+Use design-appropriate focus indicators instead of generic rings:
+
+```liquid
+<!-- ✅ Good: Input with border focus -->
+<input class="
+  border border-secondary
+  focus:border-primary focus:outline-none
+  transition-colors duration-200
+">
+
+<!-- ✅ Good: Summary with background focus -->
+<summary class="
+  bg-white hover:bg-minimal
+  focus:bg-minimal focus:outline-none
+  transition-colors duration-200
+">
+
+<!-- ✅ Good: Button with ring focus (appropriate for buttons) -->
+<button class="
+  bg-primary text-contrast
+  hover:bg-primary/90
+  focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+  transition-colors duration-200
+">
+```
+
+### 2. Focus State Guidelines
+Choose focus indicators based on component context:
+
+- **Inputs/Form Fields**: Use `focus:border-primary` when parent has `border-secondary`
+- **Summary Elements**: Use `focus:bg-minimal` for subtle background change
+- **Buttons**: Use `focus:ring-2 focus:ring-primary` for clear button focus
+- **Links**: Use `focus:underline` or `focus:text-primary` for text-based focus
+- **Cards/Containers**: Use `focus:border-primary` or `focus:shadow-lg`
+
+### 3. Reduced Motion
+Respect user preferences using the theme's custom properties:
+
+```css
+/* _styles/main.css */
+@media (prefers-reduced-motion: reduce) {
+  .transition-all {
+    transition: none !important;
+  }
+}
+```
+
+### 4. High Contrast
+Support high contrast mode:
+
+```css
+/* _styles/main.css */
+@media (prefers-contrast: high) {
+  .border-gray-200 {
+    border-color: #000000 !important;
+  }
+}
+```
+
+## Component Patterns
+
+### 1. Atomic Components
+Use consistent patterns for atomic components:
+
+```liquid
+<!-- Button component pattern -->
+<button class="
+  inline-flex items-center justify-center
+  px-4 py-2 rounded-md
+  text-sm font-medium
+  bg-primary text-contrast
+  hover:bg-primary/90 focus:bg-primary/90
+  focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+  disabled:opacity-50 disabled:cursor-not-allowed
+  transition-colors duration-200
+  {{ class }}
+">
+  {{ content }}
+</button>
+```
+
+### 2. Layout Components
+Use consistent spacing and layout patterns:
+
+```liquid
+<!-- Container pattern -->
+<div class="
+  max-w-7xl mx-auto px-4 sm:px-6 lg:px-8
+  {{ class }}
+">
+  {{ content }}
+</div>
+```
+
+### 3. Form Components
+Use consistent form styling:
+
+```liquid
+<!-- Input pattern -->
+<input class="
+  block w-full rounded-md
+  border border-secondary
+  focus:border-primary focus:outline-none
+  disabled:bg-minimal disabled:cursor-not-allowed
+  transition-colors duration-200
+  {{ class }}
+">
+```
+
+## Common Patterns
+
+### 1. Card Components
+```liquid
+<div class="
+  bg-primary border border-secondary rounded-lg shadow-sm
+  hover:shadow-md transition-shadow duration-200
+  {{ class }}
+">
+  {{ content }}
+</div>
+```
+
+### 2. Navigation Items
+```liquid
+<a class="
+  block px-3 py-2 rounded-md text-sm font-medium
+  text-secondary hover:text-primary hover:bg-minimal
+  focus:outline-none focus:bg-minimal
+  transition-colors duration-200
+  {{ class }}
+">
+  {{ content }}
+</a>
+```
+
+### 3. Status Indicators
+```liquid
+<span class="
+  inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+  {{ status == 'success' ? 'bg-green-100 text-green-800' : '' }}
+  {{ status == 'error' ? 'bg-red-100 text-red-800' : '' }}
+  {{ status == 'warning' ? 'bg-yellow-100 text-yellow-800' : '' }}
+  {{ status == 'info' ? 'bg-blue-100 text-blue-800' : '' }}
+">
+  {{ content }}
+</span>
+```
+
+## Debugging Tips
+
+### 1. Class Verification
+Use browser dev tools to verify classes are applied correctly:
+
+```javascript
+// Check if classes are present
+console.log(element.className);
+```
+
+### 2. Purge Verification
+Ensure classes aren't being purged by checking the content sources in `_styles/main.css`:
+
+```bash
+# Check what classes are being purged
+npx tailwindcss --content ./**/*.liquid --output ./temp.css
+```
+
+### 3. Dynamic Class Debugging
+For conditional classes, add debugging:
+
+```liquid
+<!-- Debug conditional classes -->
+<div class="
+  {% if debug %}border-2 border-red-500{% endif %}
+  {{ conditional_classes }}
+">
+  <!-- Add debug output -->
+  {% if debug %}
+    <div class="text-xs text-gray-500">
+      Applied classes: {{ conditional_classes }}
+    </div>
+  {% endif %}
+</div>
+```
+
+## Theme Integration
+
+### 1. Using Theme Custom Properties
+Leverage the theme's custom properties defined in `_styles/main.css`:
+
+```liquid
+<!-- Use theme colors -->
+<div class="bg-[hsl(var(--background-color-primary))] text-[hsl(var(--text-color-primary))]">
+
+<!-- Use theme fonts -->
+<div class="font-[var(--font-body)]">
+```
+
+### 2. Responsive Breakpoints
+Use the theme's responsive breakpoints:
+
+```liquid
+<!-- Use theme breakpoints -->
+<div class="
+  w-full 
+  md:w-1/2 
+  lg:w-1/3
+">
+```
+
+### 3. Custom Utilities
+Add custom utilities in `_styles/main.css`:
+
+```css
+/* _styles/main.css */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .hide-scroll-bar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scroll-bar::-webkit-scrollbar {
+    display: none;
+  }
+}
+```
+
+## Compliance Checklist
+
+Before committing any Tailwind CSS changes, ensure:
+
+- [ ] No dynamic Tailwind classes with Liquid variables
+- [ ] All conditional classes use static Tailwind values
+- [ ] Contextual focus states used (not generic rings everywhere)
+- [ ] Responsive design implemented correctly
+- [ ] Performance optimizations applied
+- [ ] Design-appropriate accessibility considerations addressed
+- [ ] Classes are logically grouped and organized
+- [ ] Custom CSS used for truly dynamic values
+- [ ] Content sources in `_styles/main.css` include all template files
+- [ ] No arbitrary values unless absolutely necessary
+- [ ] Theme custom properties used when appropriate
+- [ ] Custom utilities added to `_styles/main.css` when needed
+- [ ] Color system tokens used instead of hardcoded colors
+- [ ] Focus states match component context and design

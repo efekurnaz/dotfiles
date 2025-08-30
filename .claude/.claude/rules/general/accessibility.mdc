@@ -1,0 +1,527 @@
+---
+description: Accessibility rules for general languages used in the project
+alwaysApply: false
+---
+# Accessibility Rules for Electric Maybe Shopify Theme
+
+## Overview
+This document establishes comprehensive accessibility standards for the Electric Maybe Shopify theme project, ensuring WCAG 2.1 AA compliance across all components, sections, and interactions. All code must prioritize accessibility alongside performance and user experience.
+
+## Core Accessibility Principles
+
+### 1. Semantic HTML Structure
+- Use semantic HTML elements for their intended purpose
+- Maintain proper heading hierarchy (h1 → h2 → h3, etc.)
+- Use landmarks (header, nav, main, aside, footer) appropriately
+- Implement proper list structures (ul, ol, dl)
+
+### 2. ARIA Implementation Standards
+- Use ARIA attributes only when necessary (prefer semantic HTML)
+- Ensure ARIA attributes are properly supported and tested
+- Maintain ARIA state synchronization with JavaScript
+- Use ARIA live regions for dynamic content updates
+
+### 3. Keyboard Navigation
+- All interactive elements must be keyboard accessible
+- Implement logical tab order
+- Provide visible focus indicators
+- Support keyboard shortcuts for common actions
+
+### 4. Screen Reader Support
+- Provide meaningful alt text for images
+- Use descriptive link text
+- Implement proper form labels and error messages
+- Ensure content is announced in logical order
+
+## Component-Specific Accessibility Rules
+
+### Web Components (JavaScript)
+```javascript
+// Required accessibility implementation for all web components
+class AccessibleComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.#setupAccessibility();
+  }
+
+  #setupAccessibility() {
+    // Set ARIA attributes
+    this.setAttribute('role', 'region');
+    this.setAttribute('aria-label', 'Component description');
+    
+    // Ensure keyboard navigation
+    this.addEventListener('keydown', this.#handleKeyboard.bind(this));
+    
+    // Set tabindex for focusable elements
+    this.querySelectorAll('[data-focusable]').forEach(el => {
+      el.setAttribute('tabindex', '0');
+    });
+  }
+
+  #handleKeyboard(event) {
+    switch(event.key) {
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        this.#activate();
+        break;
+      case 'Escape':
+        this.#close();
+        break;
+    }
+  }
+}
+```
+
+### Liquid Components
+```liquid
+{%- comment -%}
+Required accessibility attributes for all interactive components
+{%- endcomment -%}
+
+{%- comment -%}Buttons{%- endcomment -%}
+<button 
+  type="button"
+  aria-label="{{ button_label | default: 'Button' }}"
+  {% if disabled %}disabled aria-disabled="true"{% endif %}
+  {% if expanded %}aria-expanded="{{ expanded }}"{% endif %}
+  {% if controls %}aria-controls="{{ controls }}"{% endif %}
+  class="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+>
+  {{ button_text }}
+</button>
+
+{%- comment -%}Images{%- endcomment -%}
+<img 
+  src="{{ image.src }}"
+  alt="{{ image.alt | default: 'Image description' }}"
+  {% if image.width %}width="{{ image.width }}"{% endif %}
+  {% if image.height %}height="{{ image.height }}"{% endif %}
+  loading="lazy"
+  decoding="async"
+  class="focus:outline-none focus:ring-2 focus:ring-blue-500"
+>
+
+{%- comment -%}Forms{%- endcomment -%}
+<form role="search" aria-label="Search form">
+  <label for="search-input" class="sr-only">Search</label>
+  <input 
+    type="search"
+    id="search-input"
+    name="q"
+    aria-describedby="search-help"
+    aria-invalid="{{ has_error }}"
+    aria-required="true"
+    required
+    class="focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+  <div id="search-help" class="sr-only">Enter your search terms</div>
+  {% if has_error %}
+    <div role="alert" aria-live="polite" class="error-message">
+      {{ error_message }}
+    </div>
+  {% endif %}
+</form>
+```
+
+## WCAG 2.1 AA Compliance Requirements
+
+### 1. Perceivable
+- **Color Contrast**: Minimum 4.5:1 for normal text, 3:1 for large text
+- **Text Alternatives**: All non-text content must have text alternatives
+- **Adaptable**: Content must be adaptable without losing structure
+- **Distinguishable**: Users must be able to see and hear content
+
+### 2. Operable
+- **Keyboard Accessible**: All functionality available via keyboard
+- **Enough Time**: Users must have enough time to read and use content
+- **Seizures**: Content must not cause seizures or physical reactions
+- **Navigable**: Users must be able to navigate and find content
+
+### 3. Understandable
+- **Readable**: Text must be readable and understandable
+- **Predictable**: Pages must operate in predictable ways
+- **Input Assistance**: Users must be helped to avoid and correct mistakes
+
+### 4. Robust
+- **Compatible**: Content must be compatible with current and future tools
+
+## Implementation Standards
+
+### Focus Management
+```javascript
+// Proper focus management for modals and overlays
+class ModalComponent extends HTMLElement {
+  #previousFocus = null;
+  #focusableElements = null;
+
+  #trapFocus() {
+    this.#focusableElements = this.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    
+    const firstElement = this.#focusableElements[0];
+    const lastElement = this.#focusableElements[this.#focusableElements.length - 1];
+    
+    this.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    });
+  }
+
+  #restoreFocus() {
+    if (this.#previousFocus) {
+      this.#previousFocus.focus();
+    }
+  }
+}
+```
+
+### Live Regions
+```javascript
+// Announce dynamic content changes
+class LiveRegionComponent extends HTMLElement {
+  #announce(message, priority = 'polite') {
+    const liveRegion = this.querySelector('[aria-live]') || this.#createLiveRegion();
+    liveRegion.setAttribute('aria-live', priority);
+    liveRegion.textContent = message;
+    
+    // Clear after announcement
+    setTimeout(() => {
+      liveRegion.textContent = '';
+    }, 1000);
+  }
+
+  #createLiveRegion() {
+    const liveRegion = document.createElement('div');
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.className = 'sr-only';
+    this.appendChild(liveRegion);
+    return liveRegion;
+  }
+}
+```
+
+### Skip Links
+```html
+<!-- Skip to main content link -->
+<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded z-50">
+  Skip to main content
+</a>
+
+<main id="main-content" tabindex="-1">
+  <!-- Main content here -->
+</main>
+```
+
+## CSS Accessibility Standards
+
+### Focus Indicators
+```css
+/* Visible focus indicators for all interactive elements */
+.focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast focus for better visibility */
+@media (prefers-contrast: high) {
+  .focus-visible {
+    outline: 3px solid #000000;
+    outline-offset: 1px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+### Screen Reader Only Content
+```css
+/* Hide content visually but keep it available to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Show content on focus for keyboard navigation */
+.sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+```
+
+## Form Accessibility
+
+### Required Form Patterns
+```liquid
+{%- comment -%}Accessible form field with proper labeling{%- endcomment -%}
+<div class="form-field">
+  <label for="{{ field_id }}" class="block text-sm font-medium text-gray-700">
+    {{ field_label }}
+    {% if required %}<span class="text-red-500" aria-label="required">*</span>{% endif %}
+  </label>
+  
+  <input 
+    type="{{ field_type | default: 'text' }}"
+    id="{{ field_id }}"
+    name="{{ field_name }}"
+    {% if required %}required aria-required="true"{% endif %}
+    {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+    {% if value %}value="{{ value }}"{% endif %}
+    {% if disabled %}disabled aria-disabled="true"{% endif %}
+    aria-describedby="{{ field_id }}-help {{ field_id }}-error"
+    aria-invalid="{{ has_error }}"
+    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+  >
+  
+  {% if help_text %}
+    <div id="{{ field_id }}-help" class="mt-1 text-sm text-gray-500">
+      {{ help_text }}
+    </div>
+  {% endif %}
+  
+  {% if has_error %}
+    <div id="{{ field_id }}-error" role="alert" aria-live="polite" class="mt-1 text-sm text-red-600">
+      {{ error_message }}
+    </div>
+  {% endif %}
+</div>
+```
+
+## Interactive Component Patterns
+
+### Toggle Components
+```javascript
+class ToggleComponent extends HTMLElement {
+  #button = null;
+  #content = null;
+  #isExpanded = false;
+
+  connectedCallback() {
+    this.#button = this.querySelector('[data-toggle-button]');
+    this.#content = this.querySelector('[data-toggle-content]');
+    
+    this.#setupAccessibility();
+    this.#bindEvents();
+  }
+
+  #setupAccessibility() {
+    this.#button.setAttribute('aria-expanded', 'false');
+    this.#button.setAttribute('aria-controls', this.#content.id);
+    this.#content.setAttribute('aria-hidden', 'true');
+  }
+
+  #toggle() {
+    this.#isExpanded = !this.#isExpanded;
+    
+    this.#button.setAttribute('aria-expanded', this.#isExpanded.toString());
+    this.#content.setAttribute('aria-hidden', (!this.#isExpanded).toString());
+    
+    // Announce state change
+    const message = this.#isExpanded ? 'Expanded' : 'Collapsed';
+    this.#announce(message);
+  }
+}
+```
+
+### Carousel/Slider Components
+```javascript
+class AccessibleCarousel extends HTMLElement {
+  #currentSlide = 0;
+  #slides = [];
+  #indicators = [];
+
+  #setupAccessibility() {
+    this.setAttribute('role', 'region');
+    this.setAttribute('aria-label', 'Image carousel');
+    
+    this.#slides.forEach((slide, index) => {
+      slide.setAttribute('aria-hidden', (index !== 0).toString());
+      slide.setAttribute('aria-label', `Slide ${index + 1} of ${this.#slides.length}`);
+    });
+    
+    this.#indicators.forEach((indicator, index) => {
+      indicator.setAttribute('role', 'tab');
+      indicator.setAttribute('aria-selected', (index === 0).toString());
+      indicator.setAttribute('aria-label', `Go to slide ${index + 1}`);
+    });
+  }
+
+  #goToSlide(index) {
+    this.#slides[this.#currentSlide].setAttribute('aria-hidden', 'true');
+    this.#indicators[this.#currentSlide].setAttribute('aria-selected', 'false');
+    
+    this.#currentSlide = index;
+    
+    this.#slides[this.#currentSlide].setAttribute('aria-hidden', 'false');
+    this.#indicators[this.#currentSlide].setAttribute('aria-selected', 'true');
+    
+    this.#announce(`Slide ${index + 1} of ${this.#slides.length}`);
+  }
+}
+```
+
+## Performance and Accessibility
+
+### Lazy Loading with Accessibility
+```javascript
+// Lazy load images while maintaining accessibility
+class LazyImage extends HTMLElement {
+  #observer = null;
+
+  connectedCallback() {
+    this.#observer = new IntersectionObserver(this.#handleIntersection.bind(this), {
+      rootMargin: '50px'
+    });
+    this.#observer.observe(this);
+  }
+
+  #handleIntersection(entries) {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        this.#loadImage();
+        this.#observer.unobserve(this);
+      }
+    });
+  }
+
+  #loadImage() {
+    const img = this.querySelector('img');
+    if (img) {
+      img.src = img.dataset.src;
+      img.alt = img.dataset.alt || 'Image';
+      img.removeAttribute('data-src');
+      img.removeAttribute('data-alt');
+    }
+  }
+}
+```
+
+## Testing and Validation
+
+### Automated Testing Checklist
+- [ ] All images have alt text
+- [ ] All form fields have labels
+- [ ] All interactive elements are keyboard accessible
+- [ ] Color contrast meets WCAG 2.1 AA standards
+- [ ] Heading hierarchy is logical
+- [ ] ARIA attributes are properly implemented
+- [ ] Focus indicators are visible
+- [ ] Screen reader announcements work correctly
+
+### Manual Testing Requirements
+- [ ] Test with screen readers (NVDA, JAWS, VoiceOver)
+- [ ] Test keyboard-only navigation
+- [ ] Test with high contrast mode
+- [ ] Test with reduced motion preferences
+- [ ] Test with zoom levels up to 200%
+- [ ] Test with different font sizes
+
+## Error Handling and Feedback
+
+### Accessible Error Messages
+```javascript
+class FormValidator extends HTMLElement {
+  #showError(field, message) {
+    const errorElement = document.createElement('div');
+    errorElement.setAttribute('role', 'alert');
+    errorElement.setAttribute('aria-live', 'polite');
+    errorElement.className = 'error-message text-red-600 text-sm mt-1';
+    errorElement.textContent = message;
+    
+    field.setAttribute('aria-invalid', 'true');
+    field.parentNode.appendChild(errorElement);
+    
+    // Announce error to screen readers
+    this.#announce(message, 'assertive');
+  }
+
+  #clearError(field) {
+    field.setAttribute('aria-invalid', 'false');
+    const errorElement = field.parentNode.querySelector('.error-message');
+    if (errorElement) {
+      errorElement.remove();
+    }
+  }
+}
+```
+
+## Compliance Checklist
+
+Before committing any code, ensure:
+
+### HTML/Liquid
+- [ ] Semantic HTML elements used appropriately
+- [ ] Proper heading hierarchy (h1 → h2 → h3)
+- [ ] All images have meaningful alt text
+- [ ] All form fields have associated labels
+- [ ] Interactive elements have proper ARIA attributes
+- [ ] Skip links implemented for main content
+- [ ] Color is not the only way to convey information
+
+### JavaScript
+- [ ] Keyboard navigation implemented for all interactions
+- [ ] Focus management for modals and overlays
+- [ ] ARIA state synchronization with JavaScript
+- [ ] Live regions for dynamic content updates
+- [ ] Error handling with accessible feedback
+- [ ] Reduced motion preferences respected
+
+### CSS
+- [ ] Visible focus indicators for all interactive elements
+- [ ] High contrast mode support
+- [ ] Reduced motion media queries implemented
+- [ ] Screen reader only content properly hidden
+- [ ] Color contrast meets WCAG 2.1 AA standards
+
+### Performance
+- [ ] Lazy loading maintains accessibility
+- [ ] Dynamic content updates are announced
+- [ ] Loading states are communicated
+- [ ] Error states are clearly indicated
+
+## Resources and References
+
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/)
+- [Shopify Accessibility Guidelines](https://shopify.dev/docs/storefronts/themes/best-practices/accessibility)
+- [WebAIM Color Contrast Checker](https://webaim.org/resources/contrastchecker/)
+- [axe-core Testing Library](https://github.com/dequelabs/axe-core)
+description:
+globs:
+alwaysApply: false
+---
