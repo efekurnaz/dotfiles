@@ -1,0 +1,160 @@
+# Ghostty Configuration - Migrated from tmux
+# ==============================================================================
+
+# Theme Configuration
+# Use dracula-pro to match your Neovim and tmux setup
+theme = dracula-pro
+
+# Font Configuration
+# Adjust these to your preference
+font-family = "MesloLGS NF"
+font-size = 14
+
+# Window Appearance
+window-padding-x = 10
+window-padding-y = 10
+background-opacity = 0.98
+background-blur-radius = 20
+
+# Shell Configuration
+shell = /bin/zsh
+
+# Mouse Support (matching tmux mouse mode)
+mouse-scroll-multiplier = 3
+
+# Window Title
+window-title-format = "Ghostty: #{title}"
+
+# Tab Bar
+window-show-tab-bar = always
+
+# Cursor
+cursor-style = block
+cursor-blink = true
+
+# ==============================================================================
+# KEYBINDINGS - Migrated from tmux with Ctrl+F prefix
+# ==============================================================================
+
+# Note: Ghostty uses > for key sequences (like tmux prefix)
+# The format is: keybind = trigger=action
+
+# Last Window Toggle (Ctrl+F, Ctrl+F)
+keybind = ctrl+f>ctrl+f=goto_last_tab
+
+# Window/Tab Management (matching tmux window commands)
+keybind = ctrl+f>c=new_tab                    # Create new tab (was tmux new-window)
+keybind = ctrl+f>n=next_tab                   # Next tab (Ctrl+N in tmux)
+keybind = ctrl+f>p=previous_tab               # Previous tab (Ctrl+P in tmux)
+keybind = ctrl+f>ctrl+n=next_tab              # Alternative next
+keybind = ctrl+f>ctrl+p=previous_tab          # Alternative previous
+keybind = ctrl+f>w=close_tab                  # Close window/tab (Ctrl+W in tmux)
+keybind = ctrl+f>ctrl+w=close_tab             # Alternative close
+keybind = ctrl+f>tab=next_tab                 # Tab to cycle (matching tmux)
+
+# Split Creation (matching tmux split commands)
+keybind = ctrl+f>v=new_split:right            # Vertical split (was tmux split -h)
+keybind = ctrl+f>s=new_split:down             # Horizontal split (was tmux split -v)
+
+# Split Navigation (vim-style like tmux)
+keybind = ctrl+f>h=goto_split:left            # Navigate left
+keybind = ctrl+f>j=goto_split:down            # Navigate down
+keybind = ctrl+f>k=goto_split:up              # Navigate up
+keybind = ctrl+f>l=goto_split:right           # Navigate right
+
+# Split Resizing (uppercase vim keys like tmux)
+keybind = ctrl+f>shift+h=resize_split:left,10
+keybind = ctrl+f>shift+j=resize_split:down,10
+keybind = ctrl+f>shift+k=resize_split:up,10
+keybind = ctrl+f>shift+l=resize_split:right,10
+
+# Popup/Quick Terminal (replaces tmux popup)
+keybind = ctrl+f>o=toggle_quick_terminal      # Open popup (was tmux display-popup)
+
+# Configuration Reload (like tmux source-file)
+keybind = ctrl+f>r=reload_config              # Reload config (was tmux source)
+
+# Window Navigation with Arrow Keys (matching tmux)
+keybind = ctrl+f>left=previous_tab            # Previous window
+keybind = ctrl+f>right=next_tab               # Next window
+
+# Direct tab switching (no prefix needed)
+keybind = cmd+1=goto_tab:1
+keybind = cmd+2=goto_tab:2
+keybind = cmd+3=goto_tab:3
+keybind = cmd+4=goto_tab:4
+keybind = cmd+5=goto_tab:5
+keybind = cmd+6=goto_tab:6
+keybind = cmd+7=goto_tab:7
+keybind = cmd+8=goto_tab:8
+keybind = cmd+9=goto_tab:9
+
+# Window reordering (like tmux swap-window but without modifier)
+# Note: Ghostty doesn't have direct equivalents to Ctrl+Shift+Left/Right
+# You can use these alternatives:
+keybind = ctrl+f>shift+left=move_tab:left
+keybind = ctrl+f>shift+right=move_tab:right
+
+# Additional useful keybindings not in tmux
+keybind = cmd+shift+p=command_palette         # Command palette (new in 1.2.0)
+keybind = cmd+shift+c=copy_to_clipboard       # Copy selection
+keybind = cmd+shift+v=paste_from_clipboard    # Paste
+keybind = cmd+plus=increase_font_size         # Zoom in
+keybind = cmd+minus=decrease_font_size        # Zoom out
+keybind = cmd+0=reset_font_size               # Reset zoom
+
+# Close split (in addition to tab close)
+keybind = ctrl+f>x=close_surface              # Close current split/tab/window
+
+# ==============================================================================
+# QUICK TERMINAL SETTINGS
+# ==============================================================================
+# The quick terminal replaces tmux's popup functionality
+quick-terminal-position = top
+quick-terminal-size = 50%
+quick-terminal-animation = true
+
+# Global keybind for quick terminal (works from anywhere on macOS)
+keybind = global:cmd+grave_accent=toggle_quick_terminal
+
+# ==============================================================================
+# ADVANCED SETTINGS
+# ==============================================================================
+
+# Enable true color support (like tmux-256color)
+window-colorspace = srgb
+
+# Scrollback (more than tmux default)
+scrollback-limit = 10000
+
+# Copy on select (like tmux mouse mode)
+copy-on-select = clipboard
+
+# Unfocused split appearance
+unfocused-split-opacity = 0.8
+
+# Bold text
+bold-is-bright = false
+
+# ==============================================================================
+# NOTES FOR MIGRATION FROM TMUX
+# ==============================================================================
+#
+# What's different:
+# - No session detachment (Ghostty runs as a GUI app)
+# - No remote sessions (use tmux on remote servers)
+# - Tabs and splits are native macOS components
+# - GPU acceleration for better performance
+#
+# What's better:
+# - Native macOS integration
+# - Better font rendering with ligatures
+# - GPU-accelerated smooth scrolling
+# - Built-in command palette
+# - Quick terminal for popup-like functionality
+#
+# Keep tmux for:
+# - Remote server sessions
+# - Session persistence across disconnects
+# - Pair programming with shared sessions
+# - Advanced scripting and automation

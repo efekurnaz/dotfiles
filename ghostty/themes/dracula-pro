@@ -1,0 +1,53 @@
+# Dracula Pro Theme for Ghostty
+# Based on your Neovim Dracula Pro configuration
+
+# Main colors from your nvim config
+background = #22212c
+foreground = #f8f8f2
+cursor-color = #8aff80
+selection-background = #454158
+selection-foreground = #f8f8f2
+
+# Comment color
+palette = 8=#7970a9
+
+# Background variations
+# bglighter = #393649
+# bglight = #2e2b3b
+# bgdark = #17161d
+# bgdarker = #0b0b0f
+
+# Black
+palette = 0=#17161d
+palette = 8=#7970a9
+
+# Red
+palette = 1=#ff5555
+palette = 9=#ff6e6e
+
+# Green (matching your active border)
+palette = 2=#8aff80
+palette = 10=#69ff94
+
+# Yellow
+palette = 3=#f1fa8c
+palette = 11=#ffffa5
+
+# Blue/Purple (matching your window status)
+palette = 4=#9580ff
+palette = 12=#d6acff
+
+# Magenta
+palette = 5=#ff79c6
+palette = 13=#ff92df
+
+# Cyan
+palette = 6=#8be9fd
+palette = 14=#a4ffff
+
+# White
+palette = 7=#f8f8f2
+palette = 15=#ffffff
+
+# Orange (for time display like in tmux)
+palette = 208=#ffb86c

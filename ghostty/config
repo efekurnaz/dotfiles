@@ -1,0 +1,14 @@
+# Ghostty Configuration - Working Minimal Version
+# ==============================================================================
+
+# Theme
+theme = Dracula
+
+# Font
+font-size = 14
+
+# Basic keybindings to test
+keybind = cmd+t=new_tab
+keybind = cmd+w=close_tab
+keybind = cmd+d=new_split:right
+keybind = cmd+shift+d=new_split:down
