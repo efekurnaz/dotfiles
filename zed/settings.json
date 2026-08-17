@@ -7,8 +7,107 @@
 // custom settings, run the `open default settings` command
 // from the command palette or from `Zed` application menu.
 {
-  "theme": "Ayu Dark",
+  "agent": {
+    "tool_permissions": {
+      "tools": {
+        "search_web": {
+          "default": "allow"
+        },
+        "terminal": {
+          "default": "allow"
+        }
+      }
+    },
+    "default_model": {
+      "provider": "zed.dev",
+      "model": "claude-sonnet-4-6",
+      "enable_thinking": true,
+      "effort": "high"
+    },
+    "favorite_models": [],
+    "model_parameters": []
+  },
+  "vim": {
+    "toggle_relative_line_numbers": true
+  },
+  "session": {
+    "trust_all_worktrees": true
+  },
+  "terminal": {
+    "font_weight": 400.0,
+    "font_family": "Berkeley Mono",
+    "line_height": {
+      "custom": 1.25
+    },
+    "cursor_shape": "block",
+    "blinking": "on"
+  },
+  "project_panel": {
+    "auto_reveal_entries": false
+  },
+  "git": {
+    "inline_blame": {
+      "enabled": true
+    }
+  },
+  "tab_bar": {
+    "show_tab_bar_buttons": false
+  },
+  "search": {
+    "include_ignored": false
+  },
+  "vertical_scroll_margin": 8.0,
+  "minimap": {
+    "show": "never"
+  },
+  "current_line_highlight": "line",
+  "cursor_blink": false,
+  "buffer_font_family": "Berkeley Mono",
+  "file_types": {
+    "javascript": [
+      "**/*.js.liquid",
+      "**/*.js.liquid"
+    ],
+    "scss": [
+      "**/*.scss.liquid",
+      "**/*.scss.liquid"
+    ],
+    "liquid": [
+      "**/*.liquid",
+      "*.liquid",
+      "**/*.liquid",
+      "*.liquid"
+    ],
+    "css": [
+      "**/*.css.liquid",
+      "**/*.css.liquid"
+    ]
+  },
+  "linked_edits": true,
+  "show_whitespaces": "all",
+  "show_edit_predictions": true,
+  "indent_guides": {
+    "enabled": false
+  },
+  "soft_wrap": "editor_width",
+  "tab_size": 2,
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry"
+    }
+  },
+  "icon_theme": {
+    "mode": "dark",
+    "light": "Zed (Default)",
+    "dark": "Zed (Default)"
+  },
+  "base_keymap": "VSCode",
+  "theme": {
+    "mode": "dark",
+    "light": "Dracula Pro (Alucard)",
+    "dark": "Dracula Pro"
+  },
   "vim_mode": true,
   "ui_font_size": 16,
-  "buffer_font_size": 16
+  "buffer_font_size": 13.0
 }
