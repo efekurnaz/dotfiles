@@ -9,13 +9,81 @@
   {
     "context": "Workspace",
     "bindings": {
-      // "shift shift": "file_finder::Toggle"
-    }
+      // tmux like new terminal
+      "ctrl-f c": "workspace::NewTerminal",
+
+      // safari like tabbing
+      "ctrl-tab": "pane::ActivateNextItem",
+      "ctrl-shift-tab": "pane::ActivatePreviousItem",
+
+      // toggle sidebar (left pane)
+      "ctrl-cmd-h": "workspace::ToggleLeftDock",
+
+      // toggle aux bar (right pane, AI)
+      "ctrl-cmd-l": "workspace::ToggleRightDock",
+
+      // toggle panel (terminal)
+      "ctrl-cmd-k": "workspace::ToggleBottomDock",
+
+      // file opener
+      "ctrl-p": "file_finder::Toggle",
+
+      // open git panel
+      "ctrl-f g c": "git_panel::ToggleFocus",
+
+      // close workspace window
+      "ctrl-f w": "workspace::CloseWindow",
+
+      // open recent
+      "ctrl-o": ["projects::OpenRecent", { "create_new_window": false }],
+
+      // zen mode (centered layout)
+      "ctrl-f f": "workspace::ToggleCenteredLayout",
+
+      // cycle through window tabs (macOS native tabs)
+      "ctrl-l": "workspace::ActivateNextWindow",
+      "ctrl-h": "workspace::ActivatePreviousWindow",
+
+      // AI assistant (cmd+i → cursor's composerMode.agent)
+      "cmd-i": "agent::ToggleFocus",
+    },
   },
   {
     "context": "Editor",
     "bindings": {
-      // "j k": ["workspace::SendKeystrokes", "escape"]
-    }
-  }
+      // switch editor tabs
+      "ctrl-j": "pane::ActivatePreviousItem",
+      "ctrl-k": "pane::ActivateNextItem",
+
+      // close editor tab
+      "ctrl-q": "pane::CloseActiveItem",
+
+      // switch between split editors
+      "ctrl-f ctrl-l": "workspace::ActivatePaneRight",
+      "ctrl-f ctrl-h": "workspace::ActivatePaneLeft",
+
+      // nav from editor down to terminal
+      "ctrl-f k": "terminal_panel::ToggleFocus",
+
+      // format document (was \p chord in cursor)
+      "\\ p": "editor::Format",
+
+      // remove default shift-alt-f format binding
+      "shift-alt-f": null,
+    },
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      // nav from terminal back to editor
+      "ctrl-f j": "workspace::ActivatePaneUp",
+
+      // switch between terminal tabs
+      "ctrl-f h": "pane::ActivatePreviousItem",
+      "ctrl-f l": "pane::ActivateNextItem",
+
+      // kill/close terminal tab
+      "ctrl-f ctrl-w": "pane::CloseActiveItem",
+    },
+  },
 ]
