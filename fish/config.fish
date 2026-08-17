@@ -33,3 +33,8 @@ direnv hook fish | source
 
 # Added by Windsurf
 fish_add_path /Users/efe/.codeium/windsurf/bin
+
+fish_add_path /Applications/Obsidian.app/Contents/MacOS
+
+# npm global binaries
+fish_add_path ~/.npm-global/bin
